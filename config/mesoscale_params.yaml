@@ -1,0 +1,21 @@
+metrics:
+  geobounds:
+    lat_min: 11
+    lat_max: 15
+    lon_min: -59.3
+    lon_max: -55.3
+  BTbounds:
+    threshold_discard_percentile: 25
+    threshold_discard_temperature: 285
+    threshold_cluster_llimit: 280
+    threshold_cluster_ulimit: 290
+  iorg:
+    stencil:
+      - 3
+      - 3
+  dates:
+    start: '2020-01-09 10:00:00'
+    stop: '2020-02-29 23:00:00'
+    step: '10T'
+manual_classifications:
+   threshold_pattern: 0.4

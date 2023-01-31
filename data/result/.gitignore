@@ -1,0 +1,14 @@
+/max_pattern_freq.nc
+/mesoscale_organization_metrics_goes16_DOM02_.nc
+/mesoscale_organization_metrics_goes16_DOM01_.nc
+/mesoscale_organization_metrics_rttov_DOM02_2.nc
+/mesoscale_organization_metrics_rttov_DOM01_2.nc
+/mesoscale_organization_metrics_rttov_DOM03_2.nc
+/CF_1DBCOmean.nc
+/mesoscale_pattern_classifications.json
+/daily_cloud_radiative_effects.json
+/no_high_clouds_DOM02.pq
+/no_high_clouds_DOM01.pq
+/tradewind_BL_profiles.nc
+/profile_means.nc
+/profile_stderr_means.nc
