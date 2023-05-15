@@ -63,6 +63,9 @@ stages:
     params:
     - ../config/mesoscale_params.yaml:
       - manual_classifications.threshold_pattern
+    - ../config/simulation.yaml:
+      - ICON312m.dates.start_analysis
+      - ICON312m.dates.stop_analysis
     plots:
     - ../figures/Patterns_manualClassifications_mostCommon.pdf
   meteor_comparison_meteorology:

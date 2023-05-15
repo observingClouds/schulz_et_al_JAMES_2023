@@ -96,10 +96,13 @@ stages:
     params:
       ../config/mesoscale_params.yaml:
         manual_classifications.threshold_pattern: 0.4
+      ../config/simulation.yaml:
+        ICON312m.dates.start_analysis: '2020-01-10 00:00:00'
+        ICON312m.dates.stop_analysis: '2020-02-19 10:00:00'
     outs:
     - path: ../figures/Patterns_manualClassifications_mostCommon.pdf
-      md5: 4da87f944c84a11215fe81eaf7bd4766
-      size: 12123
+      md5: 6340d8bdf89146c7527b1781297eb47c
+      size: 11966
   meteor_comparison_meteorology:
     cmd: python fig07_meteorology_meteor_comparison.py
     deps:
