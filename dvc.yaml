@@ -131,7 +131,7 @@ stages:
     - ../../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
     - ../../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
   daily_cc_scatter_fig12:
-    cmd: python fig12_cloudcover_daily.py
+    cmd: python fig12_cloudcover_daily.py --no-highClouds
     wdir: notebooks
     deps:
     - ../data/result/max_pattern_freq.nc

@@ -33,10 +33,18 @@ from omegaconf import OmegaConf
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "highClouds",
+    "--highClouds",
+    action="store_true",
     help="Flag indicating whether high clouds should be included in output figure",
-    type=bool,
 )
+parser.add_argument(
+    "--no-highClouds",
+    dest="highClouds",
+    action="store_false",
+    help="Flag indicating whether high clouds should be included in output figure",
+)
+parser.set_defaults(highClouds=True)
+
 args = parser.parse_args()
 
 sys.path.append("../src/helpers/")
@@ -180,7 +188,7 @@ if __name__ == "__main__":
             colors.append("grey")
 
     axs.scatter(data_1_nohigh, data_2_nohigh, color=colors, s=30, zorder=100)
-    if args["highClouds"]:
+    if args.highClouds:
         colors = []
         for date in data_1_withhigh.index.values:
             if max_freq.sel(date=date) > threshold_freq:
@@ -204,15 +212,19 @@ if __name__ == "__main__":
         [regression_func(f) for f in (np.min(data_1_nohigh), np.max(data_1_nohigh))],
         color="black",
     )
+    if args.highClouds:
+        y_pos = 6
+    else:
+        y_pos = 3
     axs.text(
         14,
-        6,
+        y_pos,
         r"$C_{\mathrm{B}}\mathrm{(OBS)}}$"
         + f"={slope:.2f}"
         + r"$\cdot C_{\mathrm{B}}\mathrm{(SIM)}}$"
         + f"+{intercept:.2f}",
     )
-    if args["highClouds"]:
+    if args.highClouds:
         slope, intercept, _, _, _ = scipy.stats.linregress(
             x=data_1_withhigh, y=data_2_withhigh
         )
@@ -259,10 +271,16 @@ if __name__ == "__main__":
     )
     sns.despine()
     axs.set_aspect(1)
-    plt.savefig(
-        "../figures/cloud_cover_scatter_nohighclouds_and_highclouds.pdf",
-        bbox_inches="tight",
-    )
+    if args.highClouds:
+        plt.savefig(
+            "../figures/cloud_cover_scatter_nohighclouds_and_highclouds.pdf",
+            bbox_inches="tight",
+        )
+    else:
+        plt.savefig(
+            "../figures/cloud_cover_scatter_nohighclouds.pdf",
+            bbox_inches="tight",
+        )
     # -
 
     print("Statistics without high clouds")

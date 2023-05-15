@@ -187,7 +187,7 @@ stages:
       md5: b670506b7aa492c60392ff90d47cc158
       size: 305088
   daily_cc_scatter_fig12:
-    cmd: python fig12_cloudcover_daily.py
+    cmd: python fig12_cloudcover_daily.py --no-highClouds
     deps:
     - path: ../data/result/max_pattern_freq.nc
       md5: 92ba9d83cfae0911b7f5861f752a3a8e
