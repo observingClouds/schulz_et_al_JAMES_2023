@@ -378,7 +378,7 @@ if __name__ == "__main__":  # noqa: C901
                     )
             axs[p].set_ylim(0, 5)
             axs[p].set_xlim(0, 55)
-            axs[p].annotate(f"$N={len(grp.time)}$", (40, 0), fontsize=7)
+            axs[p].annotate(f"$N={len(grp.time)}$", (35, 4.5), fontsize=11)
             if p == 0:
                 axs[p].set_ylabel("height / km")
             if p == 2:
