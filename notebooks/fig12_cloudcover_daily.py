@@ -25,6 +25,7 @@ import numpy as np
 import pandas as pd
 import scipy
 import seaborn as sns
+import statsmodels.api as sm
 import xarray as xr
 from intake import open_catalog
 from omegaconf import OmegaConf
@@ -220,6 +221,18 @@ if __name__ == "__main__":
         + f"+{intercept:.2f}",
         alpha=0.3,
     )
+
+    # 95%-confidence interval
+    srt = np.argsort(data_1_nohigh.values)
+    X = sm.add_constant(data_1_nohigh.values[srt])
+    ols_model = sm.OLS(data_2_nohigh.values[srt], X)
+    est = ols_model.fit()
+    out = est.conf_int(alpha=0.05, cols=None)
+    y_pred = est.predict(X)
+    x_pred = data_1_nohigh.values[srt]
+    pred = est.get_prediction(X).summary_frame()
+    axs.plot(x_pred, pred["mean_ci_lower"], linestyle="--", color="black")
+    axs.plot(x_pred, pred["mean_ci_upper"], linestyle="--", color="black")
 
     axs.set_ylabel(r"$C_{\mathrm{B}}\mathrm{(OBS)}}$ / %")
     axs.set_xlabel(r"$C_{\mathrm{B}}\mathrm{(SIM)}}$ / %")
