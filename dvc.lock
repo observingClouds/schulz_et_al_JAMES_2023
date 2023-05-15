@@ -328,8 +328,8 @@ stages:
       md5: 27dc3ee873f905698c55bf521b4b912d
       size: 1869
     - path: ../figures/FIG_CF_profile_1D-variability_groupedbyPattern_control_err-True_withoutTotal.pdf
-      md5: 4c874ec39302846eaa5c524f89126d96
-      size: 60890
+      md5: 78b980f5a49001656d93564325bcc501
+      size: 61188
   reflectivity_distribution_fig18:
     cmd: python fig18_reflectivity_histogram.py
     outs:
