@@ -618,7 +618,7 @@ if __name__ == "__main__":  # noqa: C901
                 handles=[l1, l2, l3, l4],
                 labels=["cloud radar", "ICON 624m", "ICON 312m", "ICON 156m"],
                 loc="upper center",
-                bbox_to_anchor=(0.5, -0.4),
+                bbox_to_anchor=(-0.4, -0.4),
                 fancybox=False,
                 shadow=False,
                 ncol=2,
