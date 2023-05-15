@@ -181,7 +181,7 @@ if __name__ == "__main__":
         else:
             colors.append("grey")
     axs.scatter(
-        data_1_withhigh, data_2_withhigh, color=colors, s=30, zorder=1, alpha=0.2
+        data_1_withhigh, data_2_withhigh, color=colors, s=30, zorder=1, marker="+"
     )
     # sns.regplot(obs_1D_mean.sel(index=times), DOM02_1D_mean.sel(index=times))
     slope, intercept, _, _, _ = scipy.stats.linregress(x=data_1_nohigh, y=data_2_nohigh)
