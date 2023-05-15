@@ -589,7 +589,7 @@ if __name__ == "__main__":  # noqa: C901
 
             axs[p].set_ylim(0, 5)
             axs[p].set_xlim(0, 40)
-            axs[p].annotate(f"$N={len(ds_sel.time)}$", (25, 4.6), fontsize=7)
+            axs[p].annotate(f"$N={len(ds_sel.time)}$", (17, 4.4), fontsize=11)
 
             axs[p].set_xticks([np.round(mean.CF_kaband.max(), 1)])
             axs[p].set_xticks(np.arange(0, 41, 10), minor=True)
