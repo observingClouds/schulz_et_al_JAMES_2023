@@ -61,8 +61,7 @@ if __name__ == "__main__":  # noqa: C901
     }
 
     cat_address = (
-        "https://raw.githubusercontent.com/observingClouds/"
-        "eurec4a-intake/ICON-LES-control-DOM03/catalog.yml"
+        "https://raw.githubusercontent.com/eurec4a/eurec4a-intake/master/catalog.yml"
     )
     cat = open_catalog(cat_address)
 
