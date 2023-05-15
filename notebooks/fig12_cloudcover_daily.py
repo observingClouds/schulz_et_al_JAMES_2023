@@ -15,6 +15,7 @@
 
 # works with xarray version 2012.10.0, but not with 2012.11.0 and 2012.12.0
 
+import argparse
 import logging
 import sys
 
@@ -29,6 +30,14 @@ import statsmodels.api as sm
 import xarray as xr
 from intake import open_catalog
 from omegaconf import OmegaConf
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "highClouds",
+    help="Flag indicating whether high clouds should be included in output figure",
+    type=bool,
+)
+args = parser.parse_args()
 
 sys.path.append("../src/helpers/")
 
@@ -171,18 +180,19 @@ if __name__ == "__main__":
             colors.append("grey")
 
     axs.scatter(data_1_nohigh, data_2_nohigh, color=colors, s=30, zorder=100)
-    colors = []
-    for date in data_1_withhigh.index.values:
-        if max_freq.sel(date=date) > threshold_freq:
-            color = color_dict[
-                mean_pattern_freq.pattern.values[max_pattern.sel(date=date)]
-            ]
-            colors.append(color)
-        else:
-            colors.append("grey")
-    axs.scatter(
-        data_1_withhigh, data_2_withhigh, color=colors, s=30, zorder=1, marker="+"
-    )
+    if args["highClouds"]:
+        colors = []
+        for date in data_1_withhigh.index.values:
+            if max_freq.sel(date=date) > threshold_freq:
+                color = color_dict[
+                    mean_pattern_freq.pattern.values[max_pattern.sel(date=date)]
+                ]
+                colors.append(color)
+            else:
+                colors.append("grey")
+        axs.scatter(
+            data_1_withhigh, data_2_withhigh, color=colors, s=30, zorder=1, marker="+"
+        )
     # sns.regplot(obs_1D_mean.sel(index=times), DOM02_1D_mean.sel(index=times))
     slope, intercept, _, _, _ = scipy.stats.linregress(x=data_1_nohigh, y=data_2_nohigh)
 
@@ -202,25 +212,28 @@ if __name__ == "__main__":
         + r"$\cdot C_{\mathrm{B}}\mathrm{(SIM)}}$"
         + f"+{intercept:.2f}",
     )
-
-    slope, intercept, _, _, _ = scipy.stats.linregress(
-        x=data_1_withhigh, y=data_2_withhigh
-    )
-    axs.plot(
-        [np.min(data_1_withhigh), np.max(data_1_withhigh)],
-        [regression_func(f) for f in (np.min(data_1_withhigh), np.max(data_1_withhigh))],
-        color="black",
-        alpha=0.2,
-    )
-    axs.text(
-        14,
-        3,
-        r"$C_{\mathrm{B}}\mathrm{(OBS)}}$"
-        + f"={slope:.2f}"
-        + r"$\cdot C_{\mathrm{B}}\mathrm{(SIM)}}$"
-        + f"+{intercept:.2f}",
-        alpha=0.3,
-    )
+    if args["highClouds"]:
+        slope, intercept, _, _, _ = scipy.stats.linregress(
+            x=data_1_withhigh, y=data_2_withhigh
+        )
+        axs.plot(
+            [np.min(data_1_withhigh), np.max(data_1_withhigh)],
+            [
+                regression_func(f)
+                for f in (np.min(data_1_withhigh), np.max(data_1_withhigh))
+            ],
+            color="black",
+            alpha=0.2,
+        )
+        axs.text(
+            14,
+            3,
+            r"$C_{\mathrm{B}}\mathrm{(OBS)}}$"
+            + f"={slope:.2f}"
+            + r"$\cdot C_{\mathrm{B}}\mathrm{(SIM)}}$"
+            + f"+{intercept:.2f}",
+            alpha=0.3,
+        )
 
     # 95%-confidence interval
     srt = np.argsort(data_1_nohigh.values)
