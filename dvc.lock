@@ -313,8 +313,8 @@ stages:
       size: 1869
     outs:
     - path: ../figures/FIG_CF_profile_1D-variability_totals_control_err-True.pdf
-      md5: c0fd1a7d75e0b9d9fe435384e3867ef4
-      size: 38712
+      md5: 9722c88b8bc4218d5a4bd2d877ef555d
+      size: 39412
   pattern_cloudfraction_fig16:
     cmd: python fig16_cloudfraction_bypattern.py
     deps:
