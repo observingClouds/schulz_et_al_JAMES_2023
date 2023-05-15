@@ -380,7 +380,7 @@ if __name__ == "__main__":  # noqa: C901
             axs[p].set_xlim(0, 55)
             axs[p].annotate(f"$N={len(grp.time)}$", (35, 4.5), fontsize=11)
             if p == 0:
-                axs[p].set_ylabel("height / km")
+                axs[p].set_ylabel("$z$ / km")
             if p == 2:
                 axs[p].set_xlabel("echo fraction / %")
 
