@@ -11,6 +11,8 @@ sys.path.append("../helpers/")
 import cluster_helpers as ch  # noqa: E402
 import grid_helpers as gh  # noqa: E402
 
+clear_sky_fluxes = True
+
 if __name__ == "__main__":
     client = ch.setup_cluster("local cluster", verbose=logging.ERROR)
     print(client)
@@ -37,7 +39,9 @@ if __name__ == "__main__":
 
     CRE_output_fmt = cfg.ANALYSIS.CRE.output_filename_fmt
 
-    def calc_cre_sim(domain, cells, tqc_dia_threshold=0, tqi_dia_threshold=0.5):
+    def calc_cre_sim(
+        domain, cells, tqc_dia_threshold=0, tqi_dia_threshold=0.0, clear_sky_fluxes=False
+    ):
         ds_rad = cat.simulations.ICON.LES_CampaignDomain_control[
             f"radiation_DOM0{domain}"
         ].to_dask()
@@ -61,24 +65,41 @@ if __name__ == "__main__":
         mask_cloudy = (ds_rad.water_cloud_mask == True) & (  # noqa: E712
             ds_rad.ice_cloud_mask == False  # noqa: E712
         )
+        logging.info("Calc clearsky fluxes")
+        net_sw_clearsky = ds_rad.sob_t.where(mask_cloud_free, drop=True).mean(
+            ["cell"]
+        )  # incoming is positive
+        net_lw_clearsky = ds_rad.thb_t.where(mask_cloud_free, drop=True).mean(
+            ["cell"]
+        )  # outgoing is negative
 
+        logging.info("Calc CRE")
         net_sw_cre = (
-            ds_rad.sob_t.where(mask_cloud_free).mean(["cell"])
-            - ds_rad.sob_t.where(mask_cloudy).mean(["cell"])
-        ).resample(time="1D").mean() * -1
+            net_sw_clearsky - ds_rad.sob_t.where(mask_cloudy).mean(["cell"])
+        ).resample(
+            time="1D"
+        ).mean() * -1  # positive CRE --> clouds reduce trapped energy
 
         net_lw_cre = (
-            (
-                ds_rad.thb_t.where(mask_cloud_free).mean(["cell"])
-                - ds_rad.thb_t.where(mask_cloudy).mean(["cell"])
-            )
-            .resample(time="1D")
-            .mean()
-        )
+            net_lw_clearsky - ds_rad.thb_t.where(mask_cloudy).mean(["cell"])
+        ).resample(
+            time="1D"
+        ).mean() * -1  # negative CRE --> clouds trap more energy
+        logging.info("Actual calculation")
         net_sw_cre.load()
         net_lw_cre.load()
         net_cre = net_sw_cre + net_lw_cre
-        return net_sw_cre, net_lw_cre, net_cre
+
+        if clear_sky_fluxes:
+            return (
+                net_sw_cre,
+                net_lw_cre,
+                net_cre,
+                net_sw_clearsky.resample(time="1D").mean(),
+                net_lw_clearsky.resample(time="1D").mean(),
+            )
+        else:
+            return net_sw_cre, net_lw_cre, net_cre
 
     ## Observations
     logging.info("Handling observations")
@@ -100,18 +121,24 @@ if __name__ == "__main__":
     obs_net_daily = ceres_net.resample(time="1D").mean().mean(["lat", "lon"]).compute()
 
     ### Calculate CRE
-    ceres_cre_lw = (
-        (ds_ceres.toa_lw_clr_1h - ds_ceres.toa_lw_all_1h)
-        .resample(time="1D")
-        .mean()
-        .mean(["lat", "lon"])
-    )
-    ceres_cre_sw = (
-        (ds_ceres.toa_sw_clr_1h - ds_ceres.toa_sw_all_1h)
-        .resample(time="1D")
-        .mean()
-        .mean(["lat", "lon"])
-    )
+    ceres_cre_lw = (-1 * ds_ceres.toa_lw_clr_1h) - (
+        -1 * ds_ceres.toa_lw_all_1h
+    ).resample(time="1D").mean().mean(
+        ["lat", "lon"]
+    ) * -1  # negative CRE --> clouds trap more energy
+
+    net_toa_sw_all = ds_ceres.toa_solar_all_1h - ds_ceres.toa_sw_all_1h
+    net_toa_sw_clr = ds_ceres.toa_solar_all_1h - ds_ceres.toa_sw_clr_1h
+    ceres_cre_sw = (net_toa_sw_clr - net_toa_sw_all).resample(time="1D").mean().mean(
+        ["lat", "lon"]
+    ) * -1
+    if clear_sky_fluxes:
+        ceres_sw_clearsky = (
+            net_toa_sw_clr.resample(time="1D").mean().mean(["lat", "lon"])
+        )
+        ceres_lw_clearsky = (
+            (-1 * ds_ceres.toa_lw_clr_1h).resample(time="1D").mean().mean(["lat", "lon"])
+        )
 
     ## Simulation
     ### Load data
@@ -138,11 +165,20 @@ if __name__ == "__main__":
         result_dict[f"ICON_DOM{domain:02g}_net"] = sim_net_daily
 
         ### Calculate CRE
-        (
-            result_dict[f"ICON_DOM{domain:02g}_cre_sw"],
-            result_dict[f"ICON_DOM{domain:02g}_cre_lw"],
-            result_dict[f"ICON_DOM{domain:02g}_cre_net"],
-        ) = calc_cre_sim(domain, cells)
+        if clear_sky_fluxes:
+            (
+                result_dict[f"ICON_DOM{domain:02g}_cre_sw"],
+                result_dict[f"ICON_DOM{domain:02g}_cre_lw"],
+                result_dict[f"ICON_DOM{domain:02g}_cre_net"],
+                result_dict[f"ICON_DOM{domain:02g}_clearsky_sw_net"],
+                result_dict[f"ICON_DOM{domain:02g}_clearsky_lw_net"],
+            ) = calc_cre_sim(domain, cells, clear_sky_fluxes=clear_sky_fluxes)
+        else:
+            (
+                result_dict[f"ICON_DOM{domain:02g}_cre_sw"],
+                result_dict[f"ICON_DOM{domain:02g}_cre_lw"],
+                result_dict[f"ICON_DOM{domain:02g}_cre_net"],
+            ) = calc_cre_sim(domain, cells, clear_sky_fluxes=clear_sky_fluxes)
 
     # Combine data
     logging.info("Preparing output")
@@ -157,6 +193,8 @@ if __name__ == "__main__":
         .values,
         "lwCRE_daily_CERES": ceres_cre_lw.reindex(time=reindex_dates).values,
         "swCRE_daily_CERES": ceres_cre_sw.reindex(time=reindex_dates).values,
+        "swclear_daily_CERES": ceres_sw_clearsky.reindex(time=reindex_dates).values,
+        "lwclear_daily_CERES": ceres_lw_clearsky.reindex(time=reindex_dates).values,
         "netCRE_daily_DOM01": result_dict["ICON_DOM01_cre_net"]
         .reindex(time=reindex_dates)
         .values,
@@ -166,6 +204,12 @@ if __name__ == "__main__":
         "swCRE_daily_DOM01": result_dict["ICON_DOM01_cre_sw"]
         .reindex(time=reindex_dates)
         .values,
+        "lwclear_daily_DOM01": result_dict["ICON_DOM01_clearsky_lw_net"]
+        .reindex(time=reindex_dates)
+        .values,
+        "swclear_daily_DOM01": result_dict["ICON_DOM01_clearsky_sw_net"]
+        .reindex(time=reindex_dates)
+        .values,
         "netCRE_daily_DOM02": result_dict["ICON_DOM02_cre_net"]
         .reindex(time=reindex_dates)
         .values,
@@ -173,6 +217,12 @@ if __name__ == "__main__":
         .reindex(time=reindex_dates)
         .values,
         "swCRE_daily_DOM02": result_dict["ICON_DOM02_cre_sw"]
+        .reindex(time=reindex_dates)
+        .values,
+        "lwclear_daily_DOM02": result_dict["ICON_DOM02_clearsky_lw_net"]
+        .reindex(time=reindex_dates)
+        .values,
+        "swclear_daily_DOM02": result_dict["ICON_DOM02_clearsky_sw_net"]
         .reindex(time=reindex_dates)
         .values,
         "net_daily_CERES": obs_net_daily.reindex(time=reindex_dates).values,
