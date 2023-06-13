@@ -156,10 +156,10 @@ stages:
         - 3
     outs:
     - path: ../../data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
-      md5: d9676db108873d87348620e660bfe10c
+      md5: 51b9c9aeea7613ab721eef24246e3c77
       size: 1534254
     - path: ../../data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
-      md5: cb5fc0acab9e5b27b08d66b1410c4bfc
+      md5: c1f18994c13a09293d6dd3d5c19fc15d
       size: 1534254
   calc_mesoscale_metrics_sim:
     cmd: python calc_mesoscale_metrics_simulation.py
@@ -178,13 +178,13 @@ stages:
         - 3
     outs:
     - path: ../../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-      md5: 3ae7f5d0c4df11dea5644461cfe9001d
+      md5: 622e766e954cadc52940f73dabbe76ac
       size: 1383816
     - path: ../../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-      md5: c46d10b324dde12001741fba24d92d28
+      md5: f909d2115db83781194c9ed79c7232dd
       size: 1302902
     - path: ../../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
-      md5: b670506b7aa492c60392ff90d47cc158
+      md5: 84da7a794dad4a68b22e32698041ee33
       size: 305088
   daily_cc_scatter_fig12:
     cmd: python fig12_cloudcover_daily.py --no-highClouds
@@ -214,9 +214,9 @@ stages:
       ../config/mesoscale_params.yaml:
         manual_classifications.threshold_pattern: 0.4
     outs:
-    - path: ../figures/cloud_cover_scatter_nohighclouds_and_highclouds.pdf
-      md5: 9ada9f1c1da9a656c192520331be59fa
-      size: 14532
+    - path: ../figures/cloud_cover_scatter_nohighclouds.pdf
+      md5: a86a3de4727ff7cf8ee565770c2344b3
+      size: 13315
   cloudcover_timeseries_fig13:
     cmd: python fig13_cloudcover_timeseries.py
     deps:
@@ -224,19 +224,19 @@ stages:
       md5: 92ba9d83cfae0911b7f5861f752a3a8e
       size: 14169
     - path: ../data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
-      md5: d9676db108873d87348620e660bfe10c
+      md5: 51b9c9aeea7613ab721eef24246e3c77
       size: 1534254
     - path: ../data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
-      md5: cb5fc0acab9e5b27b08d66b1410c4bfc
+      md5: c1f18994c13a09293d6dd3d5c19fc15d
       size: 1534254
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-      md5: 3ae7f5d0c4df11dea5644461cfe9001d
+      md5: 8e075c3418f0c96cd0d68e9a419f31eb
       size: 1383816
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-      md5: c46d10b324dde12001741fba24d92d28
+      md5: d57e16aa83150832ff06ad50939f5c45
       size: 1302902
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
-      md5: b670506b7aa492c60392ff90d47cc158
+      md5: 4f3ea8ad13d07dbd83f03d2bf61633ee
       size: 305088
     - path: ../data/result/no_high_clouds_DOM02.pq
       md5: bb45aec2e868ded3330448727dfd05d0
@@ -250,14 +250,14 @@ stages:
         metrics.geobounds.lon_min: -59.3
     outs:
     - path: ../figures/FIG_CC_brightness_temperature_exp2.dom1_exp2.dom2.pdf
-      md5: 5c3887ca8208821811f69607631bfeb6
+      md5: cab306564573c42a68d5c6e2c6741301
       size: 42827
     - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2.pdf
-      md5: acc48f0688ab2396b99f5c6d0d120854
-      size: 65871
+      md5: 581d50fdc08dfa69ac2fc909e5b480ad
+      size: 66251
     - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2_exp2.dom3_dom03_timeslice.pdf
-      md5: dae81e068ed68fb827f2b907a45b6d53
-      size: 41143
+      md5: 982c6592a24eb7e2ecd009af86e62031
+      size: 41519
   cloudcover_daily_fig14:
     cmd: python fig14_cloudcover_diurnalcycle.py
     deps:
@@ -265,19 +265,19 @@ stages:
       md5: 92ba9d83cfae0911b7f5861f752a3a8e
       size: 14169
     - path: ../data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
-      md5: d9676db108873d87348620e660bfe10c
+      md5: 9ba7fed140e09eb1917bb6976659fcb7
       size: 1534254
     - path: ../data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
-      md5: cb5fc0acab9e5b27b08d66b1410c4bfc
+      md5: 854a9a47b53cc31399984244b2de2c93
       size: 1534254
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-      md5: 3ae7f5d0c4df11dea5644461cfe9001d
+      md5: 622e766e954cadc52940f73dabbe76ac
       size: 1383816
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-      md5: c46d10b324dde12001741fba24d92d28
+      md5: f909d2115db83781194c9ed79c7232dd
       size: 1302902
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
-      md5: b670506b7aa492c60392ff90d47cc158
+      md5: 84da7a794dad4a68b22e32698041ee33
       size: 305088
     - path: ../data/result/no_high_clouds_DOM02.pq
       md5: bb45aec2e868ded3330448727dfd05d0
@@ -291,8 +291,8 @@ stages:
         metrics.geobounds.lon_min: -59.3
     outs:
     - path: ../figures/FIG_CC_diurnalcycle_anomaly_GOES16_ICON-312m_ICON-624m_ICON-156m.pdf
-      md5: 3b979d2da37b6e071080cec3b1321aa1
-      size: 23623
+      md5: fd0baeaf28654bb7d2a958899b1d07aa
+      size: 23697
   calc_echofraction_mtgrm:
     cmd: python calc_vertical_echoprofile.py
     outs:
@@ -350,17 +350,17 @@ stages:
         metrics.geobounds.lon_min: -59.3
     outs:
     - path: ../../data/result/daily_cloud_radiative_effects.json
-      md5: 2593daa82e4d40b840ddf9cdaa9cd212
-      size: 15310
+      md5: 70b87017cad17dbe2e7bfd3d02507a44
+      size: 23180
   TOA_fluxes_fig20-21:
-    cmd: python fig20_toa_fluxes.py
+    cmd: python fig20_toa_fluxes.py --no-highClouds
     deps:
-    - path: ../data/intermediate/Quantile_25_brightnessT_GOES16.nc
+    - path: ../data/intermediate/Quantile_brightnessT_GOES16.nc
       md5: b9c986368460ecd0fd25962c46cd6106
       size: 108152
     - path: ../data/result/daily_cloud_radiative_effects.json
-      md5: 2593daa82e4d40b840ddf9cdaa9cd212
-      size: 15310
+      md5: 524411882b06e4f6ef5757e20b51d892
+      size: 21838
     - path: ../data/result/max_pattern_freq.nc
       md5: 92ba9d83cfae0911b7f5861f752a3a8e
       size: 14169
@@ -378,17 +378,17 @@ stages:
         metrics.geobounds.lon_min: -59.3
     outs:
     - path: ../figures/Daily_CRE_anomaly_obs_vs_sim_dom02.pdf
-      md5: 7bfc5104512c50221a80d2c83b0499ce
-      size: 21966
+      md5: 426a6a0beab1d86c8a5c2e1de597cb25
+      size: 178317
     - path: ../figures/Daily_netTOA_obs_vs_sim_dom02.pdf
-      md5: cfd00e566ff29aa94b24ecce483edb46
-      size: 16050
+      md5: 5fcef71d7a31ea5d962237401346934a
+      size: 187741
     - path: ../figures/cre_scatter_obs_vs_dom02.html
-      md5: 4968012f27e1e861ec12f672e0d3d8ab
-      size: 99880
+      md5: 51f2c7910455eb340eaf646772cd51d4
+      size: 62721
     - path: ../figures/netTOA_scatter_obs_vs_dom02.html
-      md5: fa1012219a4579ed79311656806e1aa0
-      size: 33604
+      md5: 9e9e624eb3610f175e2ea8c75d825471
+      size: 24816
   create_high_cloud_mask:
     cmd: python create_highcloud_mask.py
     deps:
@@ -472,8 +472,8 @@ stages:
       size: 1971
     outs:
     - path: ../figures/Pattern_area_fraction_scatter.pdf
-      md5: 81608382561e171a23f365cf658c1b9a
-      size: 17465
+      md5: 4686e441ee5b6c513039dc4e2c2b0b00
+      size: 17474
   pattern_areafraction_comparison_fig11:
     cmd: python fig11_pattern_areafraction.py
     deps:
@@ -510,17 +510,17 @@ stages:
     cmd: python fig19_cloud-env_covariability.py
     outs:
     - path: ../figures/Cloudfraction_dependency_on_LTS_comparison.pdf
-      md5: eb9cf9e0fb7f14be5031305129ecb5f4
+      md5: 4ac7161faa6453a3e71d5adb43bbf0c6
       size: 18387
     - path: ../figures/Cloudfraction_dependency_on_PW_comparison.pdf
-      md5: 65308350b0decadcaddf428e959be51b
-      size: 17102
+      md5: 1e157109cade4afc9c9b097eaf6c6113
+      size: 17087
     - path: ../figures/Cloudfraction_dependency_on_T_comparison.pdf
-      md5: d835ea398dfa1b265f35693ed6a9e7fa
-      size: 17695
+      md5: acb924767b9856c50ec8cb87425b0e39
+      size: 17511
     - path: ../figures/Cloudfraction_dependency_on_v_comparison.pdf
-      md5: aa05b472f606a4aad8ccb6850883b773
-      size: 17644
+      md5: ee3a97e79168da90020d9f9de78d4d59
+      size: 18275
   calc_agreement:
     cmd: python agreement_ICON-ABI_IR_NN.py
     deps:
