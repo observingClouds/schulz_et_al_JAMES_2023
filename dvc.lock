@@ -250,13 +250,13 @@ stages:
         metrics.geobounds.lon_min: -59.3
     outs:
     - path: ../figures/FIG_CC_brightness_temperature_exp2.dom1_exp2.dom2.pdf
-      md5: cab306564573c42a68d5c6e2c6741301
+      md5: c274a4596aafcc1ea25cd4a66a54d581
       size: 42827
     - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2.pdf
-      md5: 581d50fdc08dfa69ac2fc909e5b480ad
+      md5: 19ce8c05c7adb65e1d9a7dd3f24168eb
       size: 66251
     - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2_exp2.dom3_dom03_timeslice.pdf
-      md5: 982c6592a24eb7e2ecd009af86e62031
+      md5: 01c9fa39485271aab7693ff934935ea3
       size: 41519
   cloudcover_daily_fig14:
     cmd: python fig14_cloudcover_diurnalcycle.py
@@ -535,3 +535,28 @@ stages:
     - path: ../../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM02_exp2.pkl
       md5: 7b1d1abdb5f9a46b9fbc56b00986f666
       size: 237713
+  calc_mesoscale_metrics:
+    cmd: python src/analysis/calc_cloudfraction.py
+    params:
+      config/mesoscale_params.yaml:
+        metrics.BTbounds.threshold_cluster_llimit: 280
+        metrics.BTbounds.threshold_cluster_ulimit: 290
+        metrics.BTbounds.threshold_discard_percentile: 25
+        metrics.BTbounds.threshold_discard_temperature: 285
+        metrics.geobounds.lat_max: 15
+        metrics.geobounds.lat_min: 11
+        metrics.geobounds.lon_max: -55.3
+        metrics.geobounds.lon_min: -59.3
+        metrics.iorg.stencil:
+        - 3
+        - 3
+    outs:
+    - path: ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
+      md5: c8099ed11f8301392b8a377fef3da7cd
+      size: 147906
+    - path: ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
+      md5: 1af5c1b3db8d0d968b5ac6783863c2e1
+      size: 139266
+    - path: ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
+      md5: f51b51aea5e02ed2ce6fb818a79ff940
+      size: 32442
