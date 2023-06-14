@@ -60,16 +60,17 @@ def cloudfraction(data, data_cloud_limits, **kwargs):
     calculation.
     """
     min_vicinity = minimum_in_vicinity(data, **kwargs)
+    N = min_vicinity > data_cloud_limits["threshold_cluster_llimit"]
     sh_clouds = (
         (data < data_cloud_limits["threshold_cluster_ulimit"])
         & (data > data_cloud_limits["threshold_cluster_llimit"])
-        & (min_vicinity > data_cloud_limits["threshold_cluster_llimit"])
+        & N
     ).sum(dim=["lat", "lon"])
-    clear_sky = ((data > data_cloud_limits["threshold_cluster_ulimit"])).sum(
+    clear_sky = ((data > data_cloud_limits["threshold_cluster_ulimit"]) & N).sum(
         dim=["lat", "lon"]
     )
     CF = sh_clouds / (sh_clouds + clear_sky)
-    return CF
+    return CF, N.sum(dim=["lat", "lon"])
 
 
 ## Simulations
@@ -90,7 +91,7 @@ for domain in [1, 2, 3]:
             "lon": slice(geobounds["lon_min"], geobounds["lon_max"]),
         }
     )
-    cloud_fraction = cloudfraction(data, org_settings)
+    cloud_fraction, N = cloudfraction(data, org_settings)
     percentile = np.nanpercentile(
         data, org_settings["threshold_discard_percentile"], axis=[1, 2]
     )
@@ -99,6 +100,7 @@ for domain in [1, 2, 3]:
         {
             "percentile_BT": ("time", percentile),
             "cloud_fraction": ("time", cloud_fraction.values),
+            "valid_cells": ("time", N.values),
         },
         coords={"time": data.time.values},
     )
@@ -114,7 +116,6 @@ for domain in [1, 2]:
     )
 
     results_satellite = {}
-    i = 0
     for date in tqdm.tqdm(dates):
         f = date.strftime(sat_input_filename_fmt.format(dom=domain))
         if not os.path.exists(f):
@@ -127,17 +128,20 @@ for domain in [1, 2]:
                 "lon": slice(geobounds["lon_min"], geobounds["lon_max"]),
             }
         )
-        cloud_fraction = cloudfraction(data, org_settings).item(0)
+        cloud_fraction, N = cloudfraction(
+            data, org_settings, window={"lat": 5, "lon": 5}
+        )
+        cloud_fraction = cloud_fraction.item(0)
+        N = N.item(0)
         percentile = np.nanpercentile(data, org_settings["threshold_discard_percentile"])
 
-        results_satellite[i] = {
+        results_satellite[date] = {
             "domain": domain,
             "filename": f,
-            "time": date,
             "cloud_fraction": cloud_fraction,
             "percentile_BT": percentile,
+            "valid_cells": N,
         }
-        i += 1
     df = pd.DataFrame.from_dict(results_satellite, orient="index")
     df.to_xarray().to_netcdf(
         metrics_output_filename_fmt.format(DOM=domain, type="goes16", exp="")
