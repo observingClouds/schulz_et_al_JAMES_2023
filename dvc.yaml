@@ -93,13 +93,11 @@ stages:
     outs:
     - ../../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM01_exp2.pkl
     - ../../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM02_exp2.pkl
-  calc_mesoscale_metrics_obs:
-    cmd: python calc_mesoscale_metrics_obs.py
-    wdir: src/analysis
-    deps:
-    - ../../data/external/GOES16_ABI
+  calc_mesoscale_metrics:
+    cmd: python src/analysis/calc_cloudfraction.py
+    wdir: ./
     params:
-    - ../../config/mesoscale_params.yaml:
+    - ./config/mesoscale_params.yaml:
       - metrics.BTbounds.threshold_cluster_llimit
       - metrics.BTbounds.threshold_cluster_ulimit
       - metrics.BTbounds.threshold_discard_percentile
@@ -110,26 +108,9 @@ stages:
       - metrics.geobounds.lon_min
       - metrics.iorg.stencil
     outs:
-    - ../../data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
-    - ../../data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
-  calc_mesoscale_metrics_sim:
-    cmd: python calc_mesoscale_metrics_simulation.py
-    wdir: src/analysis
-    params:
-    - ../../config/mesoscale_params.yaml:
-      - metrics.BTbounds.threshold_cluster_llimit
-      - metrics.BTbounds.threshold_cluster_ulimit
-      - metrics.BTbounds.threshold_discard_percentile
-      - metrics.BTbounds.threshold_discard_temperature
-      - metrics.geobounds.lat_max
-      - metrics.geobounds.lat_min
-      - metrics.geobounds.lon_max
-      - metrics.geobounds.lon_min
-      - metrics.iorg.stencil
-    outs:
-    - ../../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-    - ../../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-    - ../../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
+    - ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
+    - ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
+    - ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
   daily_cc_scatter_fig12:
     cmd: python fig12_cloudcover_daily.py --no-highClouds
     wdir: notebooks
