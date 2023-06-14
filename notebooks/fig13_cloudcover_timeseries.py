@@ -61,19 +61,13 @@ df_goes16_dom2 = xr.open_dataset(
     + ".nc"
 )
 df_rttov_dom1 = xr.open_dataset(
-    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-        type="rttov", DOM=2, exp=2
-    )
+    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(type="rttov", DOM=2, exp=2)
 )
 df_rttov_dom2 = xr.open_dataset(
-    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-        type="rttov", DOM=2, exp=2
-    )
+    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(type="rttov", DOM=2, exp=2)
 )
 df_rttov_dom2 = xr.open_dataset(
-    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-        type="rttov", DOM=3, exp=2
-    )
+    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(type="rttov", DOM=3, exp=2)
 )
 fig_output_folder = cfg.ANALYSIS.MESOSCALE.METRICS.dir_figures
 resampling = "10T"
@@ -113,29 +107,22 @@ alphas = {"exp1": 0.5, "exp2": 1}
 descr = {1: "high CCN", 2: "control"}
 
 df_simulation = xr.open_dataset(
-    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-        type="rttov", DOM=1, exp=2
-    )
+    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(type="rttov", DOM=1, exp=2)
 )
-df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
 times_sim = set(df_simulation.time.values)
 times_obs = set(df_goes16_dom1.time.values)
 common_times = sorted(times_obs.intersection(times_sim))
-data_obs = df_goes16_dom1.set_index(index="time").sel(
-    index=slice("2020-01-10", np.max(list(common_times)))
-)
+data_obs = df_goes16_dom1.sel(time=slice("2020-01-10", np.max(list(common_times))))
 
-obs_1D_mean = data_obs.cloud_fraction.resample(index="1D").mean().compute()
+obs_1D_mean = data_obs.cloud_fraction.resample(time="1D").mean().compute()
 
 df_simulation = xr.open_dataset(
-    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-        type="rttov", DOM=2, exp=2
-    )
+    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(type="rttov", DOM=2, exp=2)
 )
-df_simulation = df_simulation.set_index(index="time")
-DOM02_1D_mean = df_simulation.cloud_fraction.resample(index="1D").mean().compute()
+DOM02_1D_mean = df_simulation.cloud_fraction.resample(time="1D").mean().compute()
 
-times = list(set(obs_1D_mean.index.values).intersection(DOM02_1D_mean.index.values))
+times = list(set(obs_1D_mean.time.values).intersection(DOM02_1D_mean.time.values))
 
 df_nohighClouds = pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
 
@@ -158,19 +145,15 @@ color_dict = {
 # + tags=[]
 fig, axs = plt.subplots(1, 1, figsize=(8, 2.2), dpi=300)
 df_simulation = xr.open_dataset(
-    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-        type="rttov", DOM=2, exp=2
-    )
+    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(type="rttov", DOM=2, exp=2)
 )
-df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
 times_sim = set(df_simulation.time.values)
 times_obs = set(df_goes16_dom1.time.values)
 common_times = sorted(times_obs.intersection(times_sim))
-data_obs = df_goes16_dom1.set_index(index="time").sel(
-    index=slice("2020-01-12", np.max(list(common_times)))
-)
+data_obs = df_goes16_dom1.sel(time=slice("2020-01-12", np.max(list(common_times))))
 axs.plot(
-    data_obs.index,
+    data_obs.time,
     data_obs.cloud_fraction,
     label=conf_dict["obs"]["label"],
     color=conf_dict["obs"]["color"],
@@ -178,29 +161,30 @@ axs.plot(
 
 high_cloud_idx = np.where(data_obs.percentile_BT <= 290, 0.4, np.nan)
 low_cloud_mask = np.where(data_obs.percentile_BT <= 290, False, True)
-axs.plot(data_obs.index, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
+axs.plot(data_obs.time, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
 
 obs_overall_mean = float(data_obs.cloud_fraction.median())
 obs_overall_25th = float(data_obs.cloud_fraction.quantile(0.25))
 obs_overall_75th = float(data_obs.cloud_fraction.quantile(0.75))
 
-obs_lowcloud_mean = float(data_obs.sel(index=low_cloud_mask).cloud_fraction.median())
+obs_lowcloud_mean = float(data_obs.sel(time=low_cloud_mask).cloud_fraction.median())
 obs_lowcloud_25th = float(
-    data_obs.sel(index=low_cloud_mask).cloud_fraction.quantile(0.25)
+    data_obs.sel(time=low_cloud_mask).cloud_fraction.quantile(0.25)
 )
 obs_lowcloud_75th = float(
-    data_obs.sel(index=low_cloud_mask).cloud_fraction.quantile(0.75)
+    data_obs.sel(time=low_cloud_mask).cloud_fraction.quantile(0.75)
 )
 
 
 if __name__ == "__main__":
     logging.info(
-        f"OBS: mean: {obs_overall_mean:.3f}, mean (without high clouds): {obs_lowcloud_mean:.3f}"
+        f"OBS: mean: {obs_overall_mean:.3f}, mean (without high clouds):"
+        f" {obs_lowcloud_mean:.3f}"
     )
 times_obs = set(
-    df_goes16_dom1.set_index(index="time")
-    .sel(index=slice(np.min(list(common_times)), np.max(list(common_times))))
-    .index.values
+    df_goes16_dom1.sel(
+        time=slice(np.min(list(common_times)), np.max(list(common_times)))
+    ).time.values
 )
 experiments = []
 means = {}
@@ -216,49 +200,46 @@ for experiment in [2]:
             )
         except FileNotFoundError:
             continue
-        df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+        df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
         times_sim = set(df_simulation.time.values)
 
         common_times = sorted(times_obs.intersection(times_sim))
         logging.debug("Resampling")
         data = (
-            df_simulation.set_index(index="time")
-            .cloud_fraction.drop_duplicates("index")
-            .sortby("index")
-            .sel(index=sorted(common_times))
-            .resample(index="10T")
+            df_simulation.cloud_fraction.drop_duplicates("time")
+            .sortby("time")
+            .sel(time=sorted(common_times))
+            .resample(time="10T")
             .nearest(tolerance="10T")
         )
         logging.debug("Plotting")
         axs.plot(
-            data.index,
+            data.time,
             data,
             label=confs["label"],
             color=confs["color"],
             alpha=alphas["exp" + str(experiment)],
         )
 
-        data_reindex = data.reindex(
-            index=data_obs.index, method="nearest", tolerance="5T"
-        )
+        data_reindex = data.reindex(time=data_obs.time, method="nearest", tolerance="5T")
         #     print(data_reindex.sel(index=low_cloud_mask).mean())
         means[f"DOM0{domain}_overall_mean"] = float(data.median())
         means[f"DOM0{domain}_overall_25th"] = float(data.quantile(0.25))
         means[f"DOM0{domain}_overall_75th"] = float(data.quantile(0.75))
         means[f"DOM0{domain}_lowclouds_mean"] = float(
-            data_reindex.sel(index=low_cloud_mask).median()
+            data_reindex.sel(time=low_cloud_mask).median()
         )
         means[f"DOM0{domain}_lowclouds_25th"] = float(
-            data_reindex.sel(index=low_cloud_mask).quantile(0.25)
+            data_reindex.sel(time=low_cloud_mask).quantile(0.25)
         )
         means[f"DOM0{domain}_lowclouds_75th"] = float(
-            data_reindex.sel(index=low_cloud_mask).quantile(0.75)
+            data_reindex.sel(time=low_cloud_mask).quantile(0.75)
         )
         if __name__ == "__main__":
             logging.info(
-                f"{descr[experiment]} "
-                f'DOM0{domain}: mean: {means[f"DOM0{domain}_overall_mean"]:.3f},'
-                f'mean (without high clouds): {means[f"DOM0{domain}_lowclouds_mean"]:.3f}'
+                f"{descr[experiment]} DOM0{domain}: mean:"
+                f' {means[f"DOM0{domain}_overall_mean"]:.3f},mean (without high clouds):'
+                f' {means[f"DOM0{domain}_lowclouds_mean"]:.3f}'
             )
 
 plt.ylabel(r"$C_{\mathrm{B}}$")
@@ -385,19 +366,15 @@ obs_overall_mean
 # +
 fig, axs = plt.subplots(1, 1, figsize=(8, 2.2), dpi=300)
 df_simulation = xr.open_dataset(
-    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-        type="rttov", DOM=2, exp=2
-    )
+    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(type="rttov", DOM=2, exp=2)
 )
-df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
 times_sim = set(df_simulation.time.values)
 times_obs = set(df_goes16_dom1.time.values)
 common_times = sorted(times_obs.intersection(times_sim))
-data_obs = df_goes16_dom1.set_index(index="time").sel(
-    index=slice("2020-01-10", np.max(list(common_times)))
-)
+data_obs = df_goes16_dom1.sel(time=slice("2020-01-10", np.max(list(common_times))))
 axs.plot(
-    data_obs.index,
+    data_obs.time,
     data_obs.percentile_BT,
     label=conf_dict["obs"]["label"],
     color=conf_dict["obs"]["color"],
@@ -405,28 +382,25 @@ axs.plot(
 
 high_cloud_idx = np.where(data_obs.percentile_BT <= 290, 0.4, np.nan)
 low_cloud_mask = np.where(data_obs.percentile_BT <= 290, False, True)
-axs.plot(data_obs.index, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
+axs.plot(data_obs.time, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
 
 obs_overall_mean = float(data_obs.percentile_BT.median())
 obs_overall_25th = float(data_obs.percentile_BT.quantile(0.25))
 obs_overall_75th = float(data_obs.percentile_BT.quantile(0.75))
 
-obs_lowcloud_mean = float(data_obs.sel(index=low_cloud_mask).percentile_BT.median())
-obs_lowcloud_25th = float(
-    data_obs.sel(index=low_cloud_mask).percentile_BT.quantile(0.25)
-)
-obs_lowcloud_75th = float(
-    data_obs.sel(index=low_cloud_mask).percentile_BT.quantile(0.75)
-)
+obs_lowcloud_mean = float(data_obs.sel(time=low_cloud_mask).percentile_BT.median())
+obs_lowcloud_25th = float(data_obs.sel(time=low_cloud_mask).percentile_BT.quantile(0.25))
+obs_lowcloud_75th = float(data_obs.sel(time=low_cloud_mask).percentile_BT.quantile(0.75))
 
 if __name__ == "__main__":
     logging.info(
-        f"OBS: mean: {obs_overall_mean:.3f}, mean (without high clouds): {obs_lowcloud_mean:.3f}"
+        f"OBS: mean: {obs_overall_mean:.3f}, mean (without high clouds):"
+        f" {obs_lowcloud_mean:.3f}"
     )
 times_obs = set(
-    df_goes16_dom1.set_index(index="time")
-    .sel(index=slice(np.min(list(common_times)), np.max(list(common_times))))
-    .index.values
+    df_goes16_dom1.sel(
+        time=slice(np.min(list(common_times)), np.max(list(common_times)))
+    ).time.values
 )
 experiments = []
 means = {}
@@ -442,22 +416,21 @@ for experiment in [2]:
             )
         except FileNotFoundError:
             continue
-        df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+        df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
         times_sim = set(df_simulation.time.values)
 
         common_times = sorted(times_obs.intersection(times_sim))
         logging.debug("Resampling")
         data = (
-            df_simulation.set_index(index="time")
-            .percentile_BT.drop_duplicates("index")
-            .sortby("index")
-            .sel(index=sorted(common_times))
-            .resample(index="10T")
+            df_simulation.percentile_BT.drop_duplicates("time")
+            .sortby("time")
+            .sel(time=sorted(common_times))
+            .resample(time="10T")
             .nearest(tolerance="10T")
         )
         logging.debug("Plotting")
         axs.plot(
-            data.index,
+            data.time,
             data,
             label=confs["label"],
             color=confs["color"],
@@ -465,20 +438,20 @@ for experiment in [2]:
         )
 
         data_reindex = data.reindex(
-            index=data_obs.index, method="nearest", tolerance="5T"
+            index=data_obs.time, method="nearest", tolerance="5T"
         )
         #     print(data_reindex.sel(index=low_cloud_mask).mean())
         means[f"DOM0{domain}_overall_mean"] = float(data.median())
         means[f"DOM0{domain}_overall_25th"] = float(data.quantile(0.25))
         means[f"DOM0{domain}_overall_75th"] = float(data.quantile(0.75))
         means[f"DOM0{domain}_lowclouds_mean"] = float(
-            data_reindex.sel(index=low_cloud_mask).median()
+            data_reindex.sel(time=low_cloud_mask).median()
         )
         means[f"DOM0{domain}_lowclouds_25th"] = float(
-            data_reindex.sel(index=low_cloud_mask).quantile(0.25)
+            data_reindex.sel(time=low_cloud_mask).quantile(0.25)
         )
         means[f"DOM0{domain}_lowclouds_75th"] = float(
-            data_reindex.sel(index=low_cloud_mask).quantile(0.75)
+            data_reindex.sel(time=low_cloud_mask).quantile(0.75)
         )
         if __name__ == "__main__":
             logging.info(
@@ -570,21 +543,17 @@ plt.savefig(out_path, bbox_inches="tight")
 ylims = (0, 0.201)
 fig, axs = plt.subplots(1, 1, figsize=(8, 2.2), dpi=300)
 df_simulation = xr.open_dataset(
-    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-        type="rttov", DOM=2, exp=2
-    )
+    cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(type="rttov", DOM=2, exp=2)
 )
-df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
 times_sim = set(df_simulation.time.values)
 
-data_obs = df_goes16_dom1.set_index(index="time").sel(
-    index=slice("2020-02-01", "2020-02-07")
-)
-times_obs = set(data_obs.index.values)
+data_obs = df_goes16_dom1.sel(time=slice("2020-02-01", "2020-02-07"))
+times_obs = set(data_obs.time.values)
 common_times = sorted(times_obs.intersection(times_sim))
 
 axs.plot(
-    data_obs.index,
+    data_obs.time,
     data_obs.cloud_fraction,
     label=conf_dict["obs"]["label"],
     color=conf_dict["obs"]["color"],
@@ -592,18 +561,18 @@ axs.plot(
 
 high_cloud_idx = np.where(data_obs.percentile_BT <= 290, 0.18, np.nan)
 low_cloud_mask = np.where(data_obs.percentile_BT <= 290, False, True)
-axs.plot(data_obs.index, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
+axs.plot(data_obs.time, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
 
 obs_overall_mean = float(data_obs.cloud_fraction.median())
 obs_overall_25th = float(data_obs.cloud_fraction.quantile(0.25))
 obs_overall_75th = float(data_obs.cloud_fraction.quantile(0.75))
 
-obs_lowcloud_mean = float(data_obs.sel(index=low_cloud_mask).cloud_fraction.median())
+obs_lowcloud_mean = float(data_obs.sel(time=low_cloud_mask).cloud_fraction.median())
 obs_lowcloud_25th = float(
-    data_obs.sel(index=low_cloud_mask).cloud_fraction.quantile(0.25)
+    data_obs.sel(time=low_cloud_mask).cloud_fraction.quantile(0.25)
 )
 obs_lowcloud_75th = float(
-    data_obs.sel(index=low_cloud_mask).cloud_fraction.quantile(0.75)
+    data_obs.sel(time=low_cloud_mask).cloud_fraction.quantile(0.75)
 )
 
 
@@ -612,9 +581,9 @@ if __name__ == "__main__":
         f"OBS: mean: {obs_overall_mean}, mean (without high clouds): {obs_lowcloud_mean}"
     )
 times_obs = set(
-    data_obs.index.sel(
-        index=slice(np.min(list(common_times)), np.max(list(common_times)))
-    ).index.values
+    data_obs.time.sel(
+        time=slice(np.min(list(common_times)), np.max(list(common_times)))
+    ).time.values
 )
 experiments = []
 means = {}
@@ -632,52 +601,51 @@ for experiment in [2]:
         except FileNotFoundError:
             requested_file = cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt
             logging.warning(
-                f'File {requested_file.format(type="rttov",DOM=domain,exp=experiment)} not found'
+                "File"
+                f' {requested_file.format(type="rttov",DOM=domain,exp=experiment)} not'
+                " found"
             )
             continue
-        df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+        df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
         times_sim = set(df_simulation.time.values)
 
         common_times = sorted(times_obs.intersection(times_sim))
         logging.debug("Resampling")
         data = (
-            df_simulation.set_index(index="time")
-            .cloud_fraction.drop_duplicates("index")
-            .sortby("index")
-            .sel(index=sorted(common_times))
-            .resample(index="10T")
+            df_simulation.cloud_fraction.drop_duplicates("time")
+            .sortby("time")
+            .sel(time=sorted(common_times))
+            .resample(time="10T")
             .nearest(tolerance="10T")
         )
         logging.debug("Plotting")
         axs.plot(
-            data.index,
+            data.time,
             data,
             label=confs["label"],
             color=confs["color"],
             alpha=alphas["exp" + str(experiment)],
         )
 
-        data_reindex = data.reindex(
-            index=data_obs.index, method="nearest", tolerance="5T"
-        )
+        data_reindex = data.reindex(time=data_obs.time, method="nearest", tolerance="5T")
         #     print(data_reindex.sel(index=low_cloud_mask).mean())
         means[f"DOM0{domain}_overall_mean"] = float(data.median())
         means[f"DOM0{domain}_overall_25th"] = float(data.quantile(0.25))
         means[f"DOM0{domain}_overall_75th"] = float(data.quantile(0.75))
         means[f"DOM0{domain}_lowclouds_mean"] = float(
-            data_reindex.sel(index=low_cloud_mask).median()
+            data_reindex.sel(time=low_cloud_mask).median()
         )
         means[f"DOM0{domain}_lowclouds_25th"] = float(
-            data_reindex.sel(index=low_cloud_mask).quantile(0.25)
+            data_reindex.sel(time=low_cloud_mask).quantile(0.25)
         )
         means[f"DOM0{domain}_lowclouds_75th"] = float(
-            data_reindex.sel(index=low_cloud_mask).quantile(0.75)
+            data_reindex.sel(time=low_cloud_mask).quantile(0.75)
         )
         if __name__ == "__main__":
             logging.info(
-                f"{descr[experiment]} "
-                f'DOM0{domain}: mean: {means[f"DOM0{domain}_overall_mean"]:.3f},'
-                f'mean (without high clouds): {means[f"DOM0{domain}_lowclouds_mean"]:.3f}'
+                f"{descr[experiment]} DOM0{domain}: mean:"
+                f' {means[f"DOM0{domain}_overall_mean"]:.3f},mean (without high clouds):'
+                f' {means[f"DOM0{domain}_lowclouds_mean"]:.3f}'
             )
 
 plt.ylabel(r"$C_{\mathrm{B}}$")
