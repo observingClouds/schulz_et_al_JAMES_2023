@@ -224,11 +224,11 @@ stages:
       md5: 92ba9d83cfae0911b7f5861f752a3a8e
       size: 14169
     - path: ../data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
-      md5: 9e9eae9716e7339b13310c4f13f134c2
-      size: 1284113
+      md5: 1cf4e55552f463490c4a8e6d32e79596
+      size: 1333602
     - path: ../data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
-      md5: 80321af49145ec254dbd518317f591fe
-      size: 1284113
+      md5: dc3be10516a30396cf8d24f7b034d6ad
+      size: 1333602
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
       md5: c8099ed11f8301392b8a377fef3da7cd
       size: 147906
@@ -250,14 +250,14 @@ stages:
         metrics.geobounds.lon_min: -59.3
     outs:
     - path: ../figures/FIG_CC_brightness_temperature_exp2.dom1_exp2.dom2.pdf
-      md5: 567264627aaf55bdef111fa963ca8620
+      md5: 3eb14764feaa68445ff0e6dd0c9d9846
       size: 42827
     - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2.pdf
-      md5: f7838f5dc9874981f4a01205bd7bf3f1
-      size: 69607
+      md5: 80e4ee17f2401d0fb1a0fc63528b7812
+      size: 67745
     - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2_exp2.dom3_dom03_timeslice.pdf
-      md5: 0bdff48556c1ea0afef7bd80918884a2
-      size: 41701
+      md5: c118aeaceff130a08470ea70d7aa5cd8
+      size: 41752
   cloudcover_daily_fig14:
     cmd: python fig14_cloudcover_diurnalcycle.py
     deps:
@@ -552,11 +552,11 @@ stages:
         - 3
     outs:
     - path: ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-      md5: c8099ed11f8301392b8a377fef3da7cd
-      size: 147906
+      md5: 9d7b7c4407d447914ff7258921858c7f
+      size: 195741
     - path: ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-      md5: 1af5c1b3db8d0d968b5ac6783863c2e1
-      size: 139266
+      md5: 58537bd50ecd14a30f868cb406f29e9b
+      size: 184221
     - path: ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
-      md5: f51b51aea5e02ed2ce6fb818a79ff940
-      size: 32442
+      md5: 5c0b72d9eba616d24d826f6125233564
+      size: 41789
