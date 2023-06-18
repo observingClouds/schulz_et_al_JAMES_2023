@@ -230,10 +230,10 @@ stages:
       md5: dc3be10516a30396cf8d24f7b034d6ad
       size: 1333602
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-      md5: e49042a4f40215b390ed6a374a0435e7
+      md5: fcdf16f2ea5d6c323db06de1564355cd
       size: 195741
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-      md5: 9b250f32752184dfba07e33ea836de7e
+      md5: 048c9e6e4902223da66c4d209ecae245
       size: 184221
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
       md5: 5c0b72d9eba616d24d826f6125233564
@@ -250,13 +250,13 @@ stages:
         metrics.geobounds.lon_min: -59.3
     outs:
     - path: ../figures/FIG_CC_brightness_temperature_exp2.dom1_exp2.dom2.pdf
-      md5: b8244ff89a824d89b36108131b57d637
-      size: 42798
+      md5: 9783f3792e1f803cff6109d433498f2c
+      size: 42913
     - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2.pdf
-      md5: 8eb00f7fc06ebbe603781c690b65f67d
-      size: 68949
+      md5: 067fc111813999212746873dfcb83508
+      size: 68929
     - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2_exp2.dom3_dom03_timeslice.pdf
-      md5: 282429ce4bd75daa4010d733185d6eeb
+      md5: 2aa43c36b52270c2b14ca96a87960e7f
       size: 41776
   cloudcover_daily_fig14:
     cmd: python fig14_cloudcover_diurnalcycle.py
@@ -552,10 +552,10 @@ stages:
         - 3
     outs:
     - path: ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-      md5: e49042a4f40215b390ed6a374a0435e7
+      md5: fcdf16f2ea5d6c323db06de1564355cd
       size: 195741
     - path: ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-      md5: 9b250f32752184dfba07e33ea836de7e
+      md5: 048c9e6e4902223da66c4d209ecae245
       size: 184221
     - path: ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
       md5: 5c0b72d9eba616d24d826f6125233564
