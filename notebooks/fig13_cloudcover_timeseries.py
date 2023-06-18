@@ -187,11 +187,10 @@ if __name__ == "__main__":  # noqa: C901
         data_obs.sel(time=low_cloud_mask).cloud_fraction.quantile(0.75)
     )
 
-    if __name__ == "__main__":
-        logging.info(
-            f"OBS: mean: {obs_overall_mean:.3f}, mean (without high clouds):"
-            f" {obs_lowcloud_mean:.3f}"
-        )
+    logging.info(
+        f"OBS: mean: {obs_overall_mean:.3f}, mean (without high clouds):"
+        f" {obs_lowcloud_mean:.3f}"
+    )
     times_obs = set(
         df_goes16_dom1.sel(
             time=slice(np.min(list(common_times)), np.max(list(common_times)))
