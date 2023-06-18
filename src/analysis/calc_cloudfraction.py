@@ -143,6 +143,6 @@ for domain in [1, 2]:
             "valid_cells": N,
         }
     df = pd.DataFrame.from_dict(results_satellite, orient="index")
-    df.to_xarray().to_netcdf(
+    df.to_xarray().rename({"index": "time"}).to_netcdf(
         metrics_output_filename_fmt.format(DOM=domain, type="goes16", exp="")
     )

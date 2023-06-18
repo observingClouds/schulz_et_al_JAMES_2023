@@ -126,6 +126,22 @@ stages:
     - ../config/mesoscale_params.yaml:
       - manual_classifications.threshold_pattern
     outs:
+    - ../figures/cloud_cover_scatter_nohighclouds.pdf
+  daily_cc_scatter_fig12_highClouds:
+    cmd: python fig12_cloudcover_daily.py --highClouds
+    wdir: notebooks
+    deps:
+    - ../data/result/max_pattern_freq.nc
+    - ../data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
+    - ../data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
+    - ../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
+    - ../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
+    - ../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
+    - ../data/result/no_high_clouds_DOM02.pq
+    params:
+    - ../config/mesoscale_params.yaml:
+      - manual_classifications.threshold_pattern
+    outs:
     - ../figures/cloud_cover_scatter_nohighclouds_and_highclouds.pdf
   cloudcover_timeseries_fig13:
     cmd: python fig13_cloudcover_timeseries.py
@@ -218,10 +234,10 @@ stages:
     outs:
     - ../../data/result/daily_cloud_radiative_effects.json
   TOA_fluxes_fig20-21:
-    cmd: python fig20_toa_fluxes.py
+    cmd: python fig20_toa_fluxes.py --no-highClouds
     wdir: notebooks
     deps:
-    - ../data/intermediate/Quantile_25_brightnessT_GOES16.nc
+    - ../data/intermediate/Quantile_brightnessT_GOES16.nc
     - ../data/result/daily_cloud_radiative_effects.json
     - ../data/result/max_pattern_freq.nc
     - ../data/result/no_high_clouds_DOM02.pq

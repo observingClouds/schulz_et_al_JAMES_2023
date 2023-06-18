@@ -125,25 +125,22 @@ if __name__ == "__main__":
             type="rttov", DOM=1, exp=2
         )
     )
-    df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+    df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
     times_sim = set(df_simulation.time.values)
     times_obs = set(df_goes16_dom1.time.values)
     common_times = sorted(times_obs.intersection(times_sim))
-    data_obs = df_goes16_dom1.set_index(index="time").sel(
-        index=slice("2020-01-10", np.max(list(common_times)))
-    )
+    data_obs = df_goes16_dom1.sel(time=slice("2020-01-10", np.max(list(common_times))))
 
-    obs_1D_mean = data_obs.cloud_fraction.resample(index="1D").mean().compute()
+    obs_1D_mean = data_obs.cloud_fraction.resample(time="1D").mean().compute()
 
     df_simulation = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
             type="rttov", DOM=2, exp=2
         )
     )
-    df_simulation = df_simulation.set_index(index="time")
-    DOM02_1D_mean = df_simulation.cloud_fraction.resample(index="1D").mean().compute()
+    DOM02_1D_mean = df_simulation.cloud_fraction.resample(time="1D").mean().compute()
 
-    times = list(set(obs_1D_mean.index.values).intersection(DOM02_1D_mean.index.values))
+    times = list(set(obs_1D_mean.time.values).intersection(DOM02_1D_mean.time.values))
 
     df_nohighClouds = pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
 
@@ -166,19 +163,19 @@ if __name__ == "__main__":
     # +
     fig, axs = plt.subplots(1, 1)
     data_1_nohigh = (
-        DOM02_1D_mean.sel(index=times).sel(index=list(df_nohighClouds["no_high_cloud"]))
+        DOM02_1D_mean.sel(time=times).sel(time=list(df_nohighClouds["no_high_cloud"]))
         * 100
     )
     data_2_nohigh = (
-        obs_1D_mean.sel(index=times).sel(index=list(df_nohighClouds["no_high_cloud"]))
+        obs_1D_mean.sel(time=times).sel(time=list(df_nohighClouds["no_high_cloud"]))
         * 100
     )
 
-    data_1_withhigh = DOM02_1D_mean.sel(index=times) * 100
-    data_2_withhigh = obs_1D_mean.sel(index=times) * 100
+    data_1_withhigh = DOM02_1D_mean.sel(time=times) * 100
+    data_2_withhigh = obs_1D_mean.sel(time=times) * 100
 
     colors = []
-    for date in data_1_nohigh.index.values:
+    for date in data_1_nohigh.time.values:
         if max_freq.sel(date=date) > threshold_freq:
             color = color_dict[
                 mean_pattern_freq.pattern.values[max_pattern.sel(date=date)]
@@ -190,7 +187,7 @@ if __name__ == "__main__":
     axs.scatter(data_1_nohigh, data_2_nohigh, color=colors, s=30, zorder=100)
     if args.highClouds:
         colors = []
-        for date in data_1_withhigh.index.values:
+        for date in data_1_withhigh.time.values:
             if max_freq.sel(date=date) > threshold_freq:
                 color = color_dict[
                     mean_pattern_freq.pattern.values[max_pattern.sel(date=date)]
@@ -201,7 +198,6 @@ if __name__ == "__main__":
         axs.scatter(
             data_1_withhigh, data_2_withhigh, color=colors, s=30, zorder=1, marker="+"
         )
-    # sns.regplot(obs_1D_mean.sel(index=times), DOM02_1D_mean.sel(index=times))
     slope, intercept, _, _, _ = scipy.stats.linregress(x=data_1_nohigh, y=data_2_nohigh)
 
     def regression_func(x):
@@ -287,8 +283,8 @@ if __name__ == "__main__":
     print(
         "DOM02 mean:",
         (
-            DOM02_1D_mean.sel(index=times).sel(
-                index=list(df_nohighClouds["no_high_cloud"])
+            DOM02_1D_mean.sel(time=times).sel(
+                time=list(df_nohighClouds["no_high_cloud"])
             )
             * 100
         )
@@ -298,8 +294,8 @@ if __name__ == "__main__":
     print(
         "DOM02 median:",
         (
-            DOM02_1D_mean.sel(index=times).sel(
-                index=list(df_nohighClouds["no_high_cloud"])
+            DOM02_1D_mean.sel(time=times).sel(
+                time=list(df_nohighClouds["no_high_cloud"])
             )
             * 100
         )
@@ -309,9 +305,7 @@ if __name__ == "__main__":
     print(
         "OBS mean:",
         (
-            obs_1D_mean.sel(index=times).sel(
-                index=list(df_nohighClouds["no_high_cloud"])
-            )
+            obs_1D_mean.sel(time=times).sel(time=list(df_nohighClouds["no_high_cloud"]))
             * 100
         )
         .mean()
@@ -320,9 +314,7 @@ if __name__ == "__main__":
     print(
         "OBS median:",
         (
-            obs_1D_mean.sel(index=times).sel(
-                index=list(df_nohighClouds["no_high_cloud"])
-            )
+            obs_1D_mean.sel(time=times).sel(time=list(df_nohighClouds["no_high_cloud"]))
             * 100
         )
         .median()

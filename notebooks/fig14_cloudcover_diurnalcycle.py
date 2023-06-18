@@ -116,25 +116,22 @@ if __name__ == "__main__":
             type="rttov", DOM=1, exp=2
         )
     )
-    df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+    df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
     times_sim = set(df_simulation.time.values)
     times_obs = set(df_goes16_dom1.time.values)
     common_times = sorted(times_obs.intersection(times_sim))
-    data_obs = df_goes16_dom1.set_index(index="time").sel(
-        index=slice("2020-01-10", np.max(list(common_times)))
-    )
+    data_obs = df_goes16_dom1.sel(time=slice("2020-01-10", np.max(list(common_times))))
 
-    obs_1D_mean = data_obs.cloud_fraction.resample(index="1D").mean().compute()
+    obs_1D_mean = data_obs.cloud_fraction.resample(time="1D").mean().compute()
 
     df_simulation = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
             type="rttov", DOM=2, exp=2
         )
     )
-    df_simulation = df_simulation.set_index(index="time")
-    DOM02_1D_mean = df_simulation.cloud_fraction.resample(index="1D").mean().compute()
+    DOM02_1D_mean = df_simulation.cloud_fraction.resample(time="1D").mean().compute()
 
-    times = list(set(obs_1D_mean.index.values).intersection(DOM02_1D_mean.index.values))
+    times = list(set(obs_1D_mean.time.values).intersection(DOM02_1D_mean.time.values))
 
     df_nohighClouds = pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
 
@@ -161,29 +158,29 @@ if __name__ == "__main__":
             type="goes16", DOM=1, exp="_"
         )[:-4]
         + ".nc"
-    ).swap_dims({"index": "time"})
+    )
     df_goes16_dom2 = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
             type="goes16", DOM=2, exp="_"
         )[:-4]
         + ".nc"
-    ).swap_dims({"index": "time"})
+    )
     df_goes16_dom3 = df_goes16_dom2
     df_rttov_dom1 = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
             type="rttov", DOM=1, exp=2
         )
-    ).swap_dims({"index": "time"})
+    )
     df_rttov_dom2 = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
             type="rttov", DOM=2, exp=2
         )
-    ).swap_dims({"index": "time"})
+    )
     df_rttov_dom3 = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
             type="rttov", DOM=3, exp=2
         )
-    ).swap_dims({"index": "time"})
+    )
 
     # Get days with sufficient measurements/output
     df_goes16_dom1_minsamples = 45  # 48 is optimum
@@ -398,8 +395,6 @@ if __name__ == "__main__":
     df["product"] = "GOES16"
     df_all = pd.concat([df_all, df])
     # -
-
-    del df_all["index"]
 
     df_all["hour"] = df_all.index.hour
 
