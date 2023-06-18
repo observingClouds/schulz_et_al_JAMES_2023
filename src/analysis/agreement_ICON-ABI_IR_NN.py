@@ -16,6 +16,7 @@ import pandas as pd
 import tqdm
 import xarray as xr
 import zarr
+from omegaconf import OmegaConf
 
 experiment = 2
 label_map = {"Sugar": 0, "Fish": 3, "Flowers": 2, "Flower": 2, "Gravel": 1}
@@ -27,6 +28,13 @@ color_dict = {
     "Gravel": "#3EAE47",
     "Flowers": "#93D2E2",
 }
+
+params = OmegaConf.load("../../config/mesoscale_params.yaml")
+geobounds = {}
+geobounds["lat_min"] = params.metrics.geobounds.lat_min
+geobounds["lat_max"] = params.metrics.geobounds.lat_max
+geobounds["lon_min"] = params.metrics.geobounds.lon_min
+geobounds["lon_max"] = params.metrics.geobounds.lon_max
 
 
 def iou_one_class_from_annos(arr1, arr2, return_iou=False):
@@ -91,20 +99,6 @@ def get_date_from_filename(fn):
     except ValueError:
         date = dt.datetime.strptime(fn_parts[-1].split("_")[-3], "TrueColor%Y%m%d")
     return date
-
-
-def create_mask(boxes, labels, out, label_map=None):
-    """Create or add mask to array."""
-    if label_map is None:
-        label_map = {"Sugar": 0, "Fish": 3, "Flower": 2, "Gravel": 1}
-    xy_boxes = [wh2xy(*b) for b in boxes]
-
-    for lb, lab in enumerate(labels):
-        mask_layer = label_map[lab]
-        x1, y1, x2, y2 = np.array(xy_boxes[lb]).astype(int)
-        out[x1:x2, y1:y2, mask_layer] = True
-
-    return out
 
 
 def interSection(arr1, arr2):  # finding common elements
@@ -177,10 +171,12 @@ for DOM in [1, 2]:
             continue
 
         mask_ABI_IR_DOM01_timesVIS = mask_ABI_IR_DOM01_timesVIS.sel(
-            latitude=slice(lat1, lat0), longitude=slice(lon0, lon1)
+            latitude=slice(geobounds["lat_max"], geobounds["lat_min"]),
+            longitude=slice(geobounds["lon_min"], geobounds["lon_max"]),
         )
         mask_ICON_IR_DOM01_timesVIS = mask_ICON_IR_DOM01_timesVIS.sel(
-            latitude=slice(lat1, lat0), longitude=slice(lon0, lon1)
+            latitude=slice(geobounds["lat_max"], geobounds["lat_min"]),
+            longitude=slice(geobounds["lon_min"], geobounds["lon_max"]),
         )
 
         if sizes_calculated is False:
