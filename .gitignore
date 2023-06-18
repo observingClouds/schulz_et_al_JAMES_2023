@@ -1,3 +1,9 @@
 **/*.ipynb
 **/.ipynb_checkpoints
 **/__pycache__
+**/*.pdf
+**/*.png
+**/*.pkl
+**/*.nc
+**/*.out
+**/*.html
