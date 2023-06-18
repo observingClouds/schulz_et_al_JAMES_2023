@@ -162,9 +162,11 @@ if __name__ == "__main__":  # noqa: C901
     times_obs = set(df_goes16_dom1.time.values)
     common_times = sorted(times_obs.intersection(times_sim))
     data_obs = df_goes16_dom1.sel(time=slice("2020-01-12", np.max(list(common_times))))
+    obs_cf = data_obs.cloud_fraction
+    obs_cf[data_obs.valid_cells < data_obs.valid_cells.max() * 0.10] = np.nan
     axs.plot(
         data_obs.time,
-        data_obs.cloud_fraction,
+        obs_cf,
         label=conf_dict["obs"]["label"],
         color=conf_dict["obs"]["color"],
     )
@@ -215,12 +217,16 @@ if __name__ == "__main__":  # noqa: C901
             common_times = sorted(times_obs.intersection(times_sim))
             logging.debug("Resampling")
             data = (
-                df_simulation.cloud_fraction.drop_duplicates("time")
+                df_simulation.drop_duplicates("time")
                 .sortby("time")
                 .sel(time=sorted(common_times))
                 .resample(time="10T")
                 .nearest(tolerance="10T")
             )
+            data.cloud_fraction[
+                data.valid_cells < data.valid_cells.max() * 0.10
+            ] = np.nan
+            data = data.cloud_fraction
             logging.debug("Plotting")
             axs.plot(
                 data.time,
@@ -454,7 +460,7 @@ if __name__ == "__main__":  # noqa: C901
             )
 
             data_reindex = data.reindex(
-                index=data_obs.time, method="nearest", tolerance="5T"
+                time=data_obs.time, method="nearest", tolerance="5T"
             )
             #     print(data_reindex.sel(index=low_cloud_mask).mean())
             means[f"DOM0{domain}_overall_mean"] = float(data.median())
