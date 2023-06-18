@@ -33,7 +33,7 @@ cfg = OmegaConf.load("../../config/paths.cfg")
 params = OmegaConf.load("../../config/mesoscale_params.yaml")
 
 cat = open_catalog(
-    "https://raw.githubusercontent.com/observingClouds/eurec4a-intake/ICON-LES-control-DOM03/catalog.yml"
+    "https://raw.githubusercontent.com/eurec4a/eurec4a-intake/master/catalog.yml"
 )
 
 geobounds = {}
@@ -61,7 +61,6 @@ org_settings["stencil"] = np.ones(
 experiment = 2
 exp_longname = "LES_CampaignDomain_control"
 for domain in [1, 2, 3]:
-
     metrics_output_filename_fmt = cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt
     sysnsat_input_filename_fmt = cat.simulations.ICON[exp_longname][
         f"rttov_DOM0{domain}"
