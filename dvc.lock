@@ -193,32 +193,73 @@ stages:
       md5: 92ba9d83cfae0911b7f5861f752a3a8e
       size: 14169
     - path: ../data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
-      md5: 1cf4e55552f463490c4a8e6d32e79596
+      md5: 0304fcbde046d50c64169eb0deb8d6cb
       size: 1333602
     - path: ../data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
-      md5: dc3be10516a30396cf8d24f7b034d6ad
+      md5: 7f8c794e620e3fb250bdfccc8f7ea8c4
       size: 1333602
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-      md5: e49042a4f40215b390ed6a374a0435e7
+      md5: bc3634de75e57ca948077a74b8378ead
       size: 195741
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-      md5: 9b250f32752184dfba07e33ea836de7e
+      md5: 06b21e59e325914f9b7725ba17a5b93e
       size: 184221
     - path: ../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
-      md5: 5c0b72d9eba616d24d826f6125233564
+      md5: e8bce424c1f0a4e14ebc075790bdeb78
       size: 41789
     - path: ../data/result/no_high_clouds_DOM02.pq
-      md5: bb45aec2e868ded3330448727dfd05d0
-      size: 1971
+      md5: 8cc402c9050431723c4fbe693400fc2c
+      size: 1977
     params:
       ../config/mesoscale_params.yaml:
         manual_classifications.threshold_pattern: 0.4
     outs:
     - path: ../figures/cloud_cover_scatter_nohighclouds.pdf
-      md5: e24f2a69e61c6f222ccbdb72810f15dc
-      size: 13623
+      md5: 8672e4bf1dedeb2f8e9747433987b7e5
+      size: 13350
   cloudcover_timeseries_fig13:
     cmd: python fig13_cloudcover_timeseries.py
+    deps:
+    - path: ../data/result/max_pattern_freq.nc
+      md5: 92ba9d83cfae0911b7f5861f752a3a8e
+      size: 14169
+    - path: ../data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
+      md5: 0304fcbde046d50c64169eb0deb8d6cb
+      size: 1333602
+    - path: ../data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
+      md5: 7f8c794e620e3fb250bdfccc8f7ea8c4
+      size: 1333602
+    - path: ../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
+      md5: bc3634de75e57ca948077a74b8378ead
+      size: 195741
+    - path: ../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
+      md5: 06b21e59e325914f9b7725ba17a5b93e
+      size: 184221
+    - path: ../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
+      md5: e8bce424c1f0a4e14ebc075790bdeb78
+      size: 41789
+    - path: ../data/result/no_high_clouds_DOM02.pq
+      md5: 8cc402c9050431723c4fbe693400fc2c
+      size: 1977
+    params:
+      ../config/mesoscale_params.yaml:
+        manual_classifications.threshold_pattern: 0.4
+        metrics.geobounds.lat_max: 15
+        metrics.geobounds.lat_min: 11
+        metrics.geobounds.lon_max: -55.3
+        metrics.geobounds.lon_min: -59.3
+    outs:
+    - path: ../figures/FIG_CC_brightness_temperature_exp2.dom1_exp2.dom2.pdf
+      md5: 4a5b22f9bae1a5801f883ac1afdde947
+      size: 42747
+    - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2.pdf
+      md5: e636dc2f13dc7e38bda0df762039ab5b
+      size: 61717
+    - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2_exp2.dom3_dom03_timeslice.pdf
+      md5: 2618c674d6b4f0c9923da009f7e1faaa
+      size: 39895
+  cloudcover_daily_fig14:
+    cmd: python fig14_cloudcover_diurnalcycle.py
     deps:
     - path: ../data/result/max_pattern_freq.nc
       md5: 92ba9d83cfae0911b7f5861f752a3a8e
@@ -239,49 +280,8 @@ stages:
       md5: 5c0b72d9eba616d24d826f6125233564
       size: 41789
     - path: ../data/result/no_high_clouds_DOM02.pq
-      md5: bb45aec2e868ded3330448727dfd05d0
-      size: 1971
-    params:
-      ../config/mesoscale_params.yaml:
-        manual_classifications.threshold_pattern: 0.4
-        metrics.geobounds.lat_max: 15
-        metrics.geobounds.lat_min: 11
-        metrics.geobounds.lon_max: -55.3
-        metrics.geobounds.lon_min: -59.3
-    outs:
-    - path: ../figures/FIG_CC_brightness_temperature_exp2.dom1_exp2.dom2.pdf
-      md5: 9783f3792e1f803cff6109d433498f2c
-      size: 42913
-    - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2.pdf
-      md5: 067fc111813999212746873dfcb83508
-      size: 68929
-    - path: ../figures/FIG_CC_timeseries_exp2.dom1_exp2.dom2_exp2.dom3_dom03_timeslice.pdf
-      md5: 2aa43c36b52270c2b14ca96a87960e7f
-      size: 41776
-  cloudcover_daily_fig14:
-    cmd: python fig14_cloudcover_diurnalcycle.py
-    deps:
-    - path: ../data/result/max_pattern_freq.nc
-      md5: 92ba9d83cfae0911b7f5861f752a3a8e
-      size: 14169
-    - path: ../data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
-      md5: 1cf4e55552f463490c4a8e6d32e79596
-      size: 1333602
-    - path: ../data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
-      md5: dc3be10516a30396cf8d24f7b034d6ad
-      size: 1333602
-    - path: ../data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-      md5: e49042a4f40215b390ed6a374a0435e7
-      size: 195741
-    - path: ../data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-      md5: 9b250f32752184dfba07e33ea836de7e
-      size: 184221
-    - path: ../data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
-      md5: 5c0b72d9eba616d24d826f6125233564
-      size: 41789
-    - path: ../data/result/no_high_clouds_DOM02.pq
-      md5: bb45aec2e868ded3330448727dfd05d0
-      size: 1971
+      md5: 41d755559e3a3d13e40e6d76182f1398
+      size: 1937
     params:
       ../config/mesoscale_params.yaml:
         manual_classifications.threshold_pattern: 0.4
@@ -291,7 +291,7 @@ stages:
         metrics.geobounds.lon_min: -59.3
     outs:
     - path: ../figures/FIG_CC_diurnalcycle_anomaly_GOES16_ICON-312m_ICON-624m_ICON-156m.pdf
-      md5: 5308abd6a88832de7d0ca0019315628f
+      md5: ac8ab23ddeeac8cdfe1a76ab2be1d77a
       size: 23615
   calc_echofraction_mtgrm:
     cmd: python calc_vertical_echoprofile.py
@@ -355,18 +355,15 @@ stages:
   TOA_fluxes_fig20-21:
     cmd: python fig20_toa_fluxes.py --no-highClouds
     deps:
-    - path: ../data/intermediate/Quantile_brightnessT_GOES16.nc
-      md5: b9c986368460ecd0fd25962c46cd6106
-      size: 108152
     - path: ../data/result/daily_cloud_radiative_effects.json
-      md5: 524411882b06e4f6ef5757e20b51d892
-      size: 21838
+      md5: 43b49ab1ac82cd634ebe330ad0355a79
+      size: 27137
     - path: ../data/result/max_pattern_freq.nc
       md5: 92ba9d83cfae0911b7f5861f752a3a8e
       size: 14169
     - path: ../data/result/no_high_clouds_DOM02.pq
-      md5: bb45aec2e868ded3330448727dfd05d0
-      size: 1971
+      md5: 8cc402c9050431723c4fbe693400fc2c
+      size: 1977
     params:
       ../config/mesoscale_params.yaml:
         manual_classifications.threshold_pattern: 0.4
@@ -378,26 +375,37 @@ stages:
         metrics.geobounds.lon_min: -59.3
     outs:
     - path: ../figures/Daily_CRE_anomaly_obs_vs_sim_dom02.pdf
-      md5: 426a6a0beab1d86c8a5c2e1de597cb25
-      size: 178317
+      md5: 093413d7d9d007fb15e55a5932a4fdbd
+      size: 178487
     - path: ../figures/Daily_netTOA_obs_vs_sim_dom02.pdf
-      md5: 5fcef71d7a31ea5d962237401346934a
-      size: 187741
+      md5: 59f8b15fff0b600cb13fbfa903c5bb80
+      size: 187718
     - path: ../figures/cre_scatter_obs_vs_dom02.html
-      md5: 51f2c7910455eb340eaf646772cd51d4
-      size: 62721
+      md5: c30518e76744f973a66933eff4788792
+      size: 62125
     - path: ../figures/netTOA_scatter_obs_vs_dom02.html
-      md5: 9e9e624eb3610f175e2ea8c75d825471
-      size: 24816
+      md5: 4cd0e5047592551ebf89a1633f490bad
+      size: 24868
   create_high_cloud_mask:
-    cmd: python create_highcloud_mask.py
+    cmd: python src/analysis/create_highcloud_mask.py
     deps:
-    - path: ../../data/external/GOES16_ABI/
-      md5: 2a542af52b0a4b7052e2bef457a095b5.dir
-      size: 52836502640
-      nfiles: 6183
+    - path: ./data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
+      md5: 0304fcbde046d50c64169eb0deb8d6cb
+      size: 1333602
+    - path: ./data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
+      md5: 7f8c794e620e3fb250bdfccc8f7ea8c4
+      size: 1333602
+    - path: ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
+      md5: bc3634de75e57ca948077a74b8378ead
+      size: 195741
+    - path: ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
+      md5: 06b21e59e325914f9b7725ba17a5b93e
+      size: 184221
+    - path: ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
+      md5: e8bce424c1f0a4e14ebc075790bdeb78
+      size: 41789
     params:
-      ../../config/mesoscale_params.yaml:
+      config/mesoscale_params.yaml:
         metrics.BTbounds.threshold_discard_percentile: 25
         metrics.BTbounds.threshold_discard_temperature: 285
         metrics.geobounds.lat_max: 15
@@ -405,15 +413,12 @@ stages:
         metrics.geobounds.lon_max: -55.3
         metrics.geobounds.lon_min: -59.3
     outs:
-    - path: ../../data/intermediate/Quantile_brightnessT_GOES16.nc
-      md5: b9c986368460ecd0fd25962c46cd6106
-      size: 108152
-    - path: ../../data/result/no_high_clouds_DOM01.pq
-      md5: fee4ae65355a9d0a6f0cea133886f533
-      size: 1976
-    - path: ../../data/result/no_high_clouds_DOM02.pq
-      md5: bb45aec2e868ded3330448727dfd05d0
-      size: 1971
+    - path: ./data/result/no_high_clouds_DOM01.pq
+      md5: d6f5db1db9f5afeb94335aefb6470efe
+      size: 1991
+    - path: ./data/result/no_high_clouds_DOM02.pq
+      md5: 8cc402c9050431723c4fbe693400fc2c
+      size: 1977
   calc_tradewind_stats:
     cmd: python calc_tradewind_BL_stats.py
     params:
@@ -465,15 +470,15 @@ stages:
     cmd: python fig10_pattern_areafraction_daily.py
     deps:
     - path: ../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM02_exp2.pkl
-      md5: 7b1d1abdb5f9a46b9fbc56b00986f666
+      md5: d8bfee018cd6e363e3ea9d37a174056d
       size: 237713
     - path: ../data/result/no_high_clouds_DOM02.pq
-      md5: bb45aec2e868ded3330448727dfd05d0
-      size: 1971
+      md5: 8cc402c9050431723c4fbe693400fc2c
+      size: 1977
     outs:
     - path: ../figures/Pattern_area_fraction_scatter.pdf
-      md5: 4686e441ee5b6c513039dc4e2c2b0b00
-      size: 17474
+      md5: 23ed07b058534c18c5d52a16c66f7716
+      size: 17276
   pattern_areafraction_comparison_fig11:
     cmd: python fig11_pattern_areafraction.py
     deps:
@@ -551,14 +556,20 @@ stages:
         - 3
         - 3
     outs:
+    - path: ./data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
+      md5: 0304fcbde046d50c64169eb0deb8d6cb
+      size: 1333602
+    - path: ./data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
+      md5: 7f8c794e620e3fb250bdfccc8f7ea8c4
+      size: 1333602
     - path: ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-      md5: fcdf16f2ea5d6c323db06de1564355cd
+      md5: bc3634de75e57ca948077a74b8378ead
       size: 195741
     - path: ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-      md5: 048c9e6e4902223da66c4d209ecae245
+      md5: 06b21e59e325914f9b7725ba17a5b93e
       size: 184221
     - path: ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
-      md5: 5c0b72d9eba616d24d826f6125233564
+      md5: e8bce424c1f0a4e14ebc075790bdeb78
       size: 41789
   daily_cc_scatter_fig12_highClouds:
     cmd: python fig12_cloudcover_daily.py --highClouds

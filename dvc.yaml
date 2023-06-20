@@ -108,6 +108,8 @@ stages:
       - metrics.geobounds.lon_min
       - metrics.iorg.stencil
     outs:
+    - ./data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
+    - ./data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
     - ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
     - ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
     - ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
@@ -237,7 +239,6 @@ stages:
     cmd: python fig20_toa_fluxes.py --no-highClouds
     wdir: notebooks
     deps:
-    - ../data/intermediate/Quantile_brightnessT_GOES16.nc
     - ../data/result/daily_cloud_radiative_effects.json
     - ../data/result/max_pattern_freq.nc
     - ../data/result/no_high_clouds_DOM02.pq
@@ -256,12 +257,16 @@ stages:
     - ../figures/cre_scatter_obs_vs_dom02.html
     - ../figures/netTOA_scatter_obs_vs_dom02.html
   create_high_cloud_mask:
-    cmd: python create_highcloud_mask.py
-    wdir: src/analysis
+    cmd: python src/analysis/create_highcloud_mask.py
+    wdir: ./
     deps:
-    - ../../data/external/GOES16_ABI/
+    - ./data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
+    - ./data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
+    - ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
+    - ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
+    - ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
     params:
-    - ../../config/mesoscale_params.yaml:
+    - ./config/mesoscale_params.yaml:
       - metrics.BTbounds.threshold_discard_percentile
       - metrics.BTbounds.threshold_discard_temperature
       - metrics.geobounds.lat_max
@@ -269,9 +274,8 @@ stages:
       - metrics.geobounds.lon_max
       - metrics.geobounds.lon_min
     outs:
-    - ../../data/intermediate/Quantile_brightnessT_GOES16.nc
-    - ../../data/result/no_high_clouds_DOM01.pq
-    - ../../data/result/no_high_clouds_DOM02.pq
+    - ./data/result/no_high_clouds_DOM01.pq
+    - ./data/result/no_high_clouds_DOM02.pq
   calc_tradewind_stats:
     cmd: python calc_tradewind_BL_stats.py
     wdir: src/analysis
