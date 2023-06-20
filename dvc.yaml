@@ -8,18 +8,6 @@ stages:
       - REANALYSIS.ERA5.sst.local
     outs:
     - data/external/era5_sst-skt.nc
-  fig02_compare_SST:
-    cmd: python fig02_sst_meteor_comparison.py
-    deps:
-    - ../data/external/EUREC4A_Meteor_DSHIP.nc
-    - ../data/external/era5_sst-skt.nc
-    params:
-    - ../config/paths.cfg:
-      - OBS.Meteor.sst_dship
-      - REANALYSIS
-    plots:
-    - ../figures/comparison_era5_meteor_ssts.pdf
-    wdir: notebooks
   get_GOES16_ABI:
     cmd: python download_GOESsite.py
     wdir: src/data
@@ -35,13 +23,6 @@ stages:
     - fig03_animate_satellite_images.py
     outs:
     - ../figures/fig03_animation
-  fig03_create_ABI_animation:
-    cmd: ffmpeg -s 4000x1500 -pattern_type glob -i 'figures/fig03_animation/*.png'
-      -r 10 -codec:v copy -pix_fmt yuv420p -video_size 4000x1500 -r 30 -c:v h264 figures/ABI_comparison_ICON_GOES16.mp4
-    deps:
-    - figures/fig03_animation
-    outs:
-    - figures/ABI_comparison_ICON_GOES16.mp4
   get_manual_pattern_classifications:
     cmd: python define_mesoscale_groups.py
     wdir: src/analysis
@@ -55,36 +36,6 @@ stages:
     outs:
     - ../../data/result/max_pattern_freq.nc
     - ../../data/result/mesoscale_pattern_classifications.json
-  fig04_manual_pattern_timeseries:
-    cmd: python fig04_identified_mesoscale_patterns.py
-    wdir: notebooks
-    deps:
-    - ../data/result/max_pattern_freq.nc
-    params:
-    - ../config/mesoscale_params.yaml:
-      - manual_classifications.threshold_pattern
-    - ../config/simulation.yaml:
-      - ICON312m.dates.start_analysis
-      - ICON312m.dates.stop_analysis
-    plots:
-    - ../figures/Patterns_manualClassifications_mostCommon.pdf
-  fig06_meteor_comparison_meteorology:
-    cmd: python fig06_meteorology_meteor_comparison.py
-    wdir: notebooks
-    deps:
-    - ../data/external/EUREC4A_Meteor_DSHIP.nc
-    outs:
-    - ../figures/Meteor_vs_Simulation_rh.pdf
-    - ../figures/Meteor_vs_Simulation_sst-skin.pdf
-    - ../figures/Meteor_vs_Simulation_temperature.pdf
-    - ../figures/Meteor_vs_Simulation_wspd.pdf
-  fig07_create_sample_images:
-    cmd: python fig07_pattern_examples_simulation.py
-    wdir: notebooks
-    deps:
-    - ../data/external/GOES16_ABI/
-    outs:
-    - ../figures/fig07/
   calc_agreement:
     cmd: python agreement_ICON-ABI_IR_NN.py
     wdir: src/analysis
@@ -113,6 +64,148 @@ stages:
     - ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
     - ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
     - ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
+  calc_echofraction_mtgrm:
+    cmd: python calc_vertical_echoprofile.py
+    wdir: src/analysis
+    outs:
+    - ../../data/result/CF_1DBCOmean.nc
+  calc_TOA_fluxes:
+    cmd: python calc_TOAfluxes.py
+    wdir: src/analysis
+    deps:
+    - ../../data/external/CERES_SYN1deg-1H_Terra-Aqua-MODIS_Ed4.1_Subset_20200101-20200331.nc
+    params:
+    - ../../config/mesoscale_params.yaml:
+      - metrics.geobounds.lat_max
+      - metrics.geobounds.lat_min
+      - metrics.geobounds.lon_max
+      - metrics.geobounds.lon_min
+    outs:
+    - ../../data/result/daily_cloud_radiative_effects.json
+  create_high_cloud_mask:
+    cmd: python src/analysis/create_highcloud_mask.py
+    wdir: ./
+    deps:
+    - ./data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
+    - ./data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
+    - ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
+    - ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
+    - ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
+    params:
+    - ./config/mesoscale_params.yaml:
+      - metrics.BTbounds.threshold_discard_percentile
+      - metrics.BTbounds.threshold_discard_temperature
+      - metrics.geobounds.lat_max
+      - metrics.geobounds.lat_min
+      - metrics.geobounds.lon_max
+      - metrics.geobounds.lon_min
+    outs:
+    - ./data/result/no_high_clouds_DOM01.pq
+    - ./data/result/no_high_clouds_DOM02.pq
+  calc_tradewind_stats:
+    cmd: python calc_tradewind_BL_stats.py
+    wdir: src/analysis
+    params:
+    - ../../config/mesoscale_params.yaml:
+      - metrics.geobounds.lat_max
+      - metrics.geobounds.lat_min
+      - metrics.geobounds.lon_max
+      - metrics.geobounds.lon_min
+    outs:
+    - ../../data/result/tradewind_BL_profiles.nc
+    - ../../data/intermediate/theta_l_gradient.zarr
+    - ../../figures/area_selected_for_tradewind_BL_statistics.pdf
+  calc_echofraction:
+    cmd: python calc_echofraction.py
+    wdir: src/analysis
+    deps:
+    - ../../data/result/no_high_clouds_DOM02.pq
+    outs:
+    - ../../data/result/profile_means.nc
+    - ../../data/result/profile_stderr_means.nc
+  fig02_compare_SST:
+    cmd: python fig02_sst_meteor_comparison.py
+    deps:
+    - ../data/external/EUREC4A_Meteor_DSHIP.nc
+    - ../data/external/era5_sst-skt.nc
+    params:
+    - ../config/paths.cfg:
+      - OBS.Meteor.sst_dship
+      - REANALYSIS
+    plots:
+    - ../figures/comparison_era5_meteor_ssts.pdf
+    wdir: notebooks
+  fig03_create_ABI_animation:
+    cmd: ffmpeg -s 4000x1500 -pattern_type glob -i 'figures/fig03_animation/*.png'
+      -r 10 -codec:v copy -pix_fmt yuv420p -video_size 4000x1500 -r 30 -c:v h264 figures/ABI_comparison_ICON_GOES16.mp4
+    deps:
+    - figures/fig03_animation
+    outs:
+    - figures/ABI_comparison_ICON_GOES16.mp4
+  fig04_manual_pattern_timeseries:
+    cmd: python fig04_identified_mesoscale_patterns.py
+    wdir: notebooks
+    deps:
+    - ../data/result/max_pattern_freq.nc
+    params:
+    - ../config/mesoscale_params.yaml:
+      - manual_classifications.threshold_pattern
+    - ../config/simulation.yaml:
+      - ICON312m.dates.start_analysis
+      - ICON312m.dates.stop_analysis
+    plots:
+    - ../figures/Patterns_manualClassifications_mostCommon.pdf
+  fig05_boundary_layer:
+    cmd: python fig05_tradewind_boundary_layer_variability.py
+    wdir: notebooks
+    deps:
+    - ../data/intermediate/theta_l_gradient.zarr
+    - ../data/result/tradewind_BL_profiles.nc
+    params:
+    - ../config/mesoscale_params.yaml:
+      - metrics.geobounds.lat_max
+      - metrics.geobounds.lat_min
+      - metrics.geobounds.lon_max
+      - metrics.geobounds.lon_min
+    outs:
+    - ../figures/profiles_3D_cf_DOM02_(13.3, -57.717)+1_mean.pdf
+    - ../figures/profiles_3D_qc_DOM02_(13.3, -57.717)+1_mean.pdf
+    - ../figures/profiles_3D_qt_DOM02_(13.3, -57.717)+1_mean.pdf
+    - ../figures/profiles_3D_wspd_DOM02_(13.3, -57.717)+1_mean.pdf
+    - ../figures/profiles_3D_θₗ_DOM02_(13.3, -57.717)+1_mean.pdf
+  fig06_meteor_comparison_meteorology:
+    cmd: python fig06_meteorology_meteor_comparison.py
+    wdir: notebooks
+    deps:
+    - ../data/external/EUREC4A_Meteor_DSHIP.nc
+    outs:
+    - ../figures/Meteor_vs_Simulation_rh.pdf
+    - ../figures/Meteor_vs_Simulation_sst-skin.pdf
+    - ../figures/Meteor_vs_Simulation_temperature.pdf
+    - ../figures/Meteor_vs_Simulation_wspd.pdf
+  fig07_create_sample_images:
+    cmd: python fig07_pattern_examples_simulation.py
+    wdir: notebooks
+    deps:
+    - ../data/external/GOES16_ABI/
+    outs:
+    - ../figures/fig07/
+  fig08_pattern_areafraction_scatter:
+    cmd: python fig08_pattern_areafraction_daily.py
+    wdir: notebooks
+    deps:
+    - ../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM02_exp2.pkl
+    - ../data/result/no_high_clouds_DOM02.pq
+    outs:
+    - ../figures/Pattern_area_fraction_scatter.pdf
+  fig09_pattern_areafraction_comparison:
+    cmd: python fig09_pattern_areafraction.py
+    wdir: notebooks
+    deps:
+    - ../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM01_exp2.pkl
+    - ../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM02_exp2.pkl
+    outs:
+    - ../figures/Comparison_NN_mean_diff_to_obs_expexp2.dom1-exp2.dom2.pdf
   fig10_daily_cc_scatter:
     cmd: python fig10_cloudcover_daily.py --no-highClouds
     wdir: notebooks
@@ -187,11 +280,6 @@ stages:
       - metrics.geobounds.lon_min
     outs:
     - ../figures/FIG_CC_diurnalcycle_anomaly_GOES16_ICON-312m_ICON-624m_ICON-156m.pdf
-  calc_echofraction_mtgrm:
-    cmd: python calc_vertical_echoprofile.py
-    wdir: src/analysis
-    outs:
-    - ../../data/result/CF_1DBCOmean.nc
   fig13_total_cloudfraction:
     cmd: python fig13_cloudfraction_total.py
     wdir: notebooks
@@ -209,6 +297,16 @@ stages:
     - ../data/result/max_pattern_freq.nc
     - ../data/result/mesoscale_pattern_classifications.json
     - ../figures/FIG_CF_profile_1D-variability_groupedbyPattern_control_err-True_withoutTotal.pdf
+  fig15_echofraction_scatter:
+    cmd: python fig15_echofraction_daily.py
+    wdir: notebooks
+    deps:
+    - ../data/result/no_high_clouds_DOM02.pq
+    - ../data/result/profile_means.nc
+    - ../data/result/profile_stderr_means.nc
+    outs:
+    - ../figures/daily_echo_fraction_anomaly_timeseries@300m_ICON312m+OBS.pdf
+    - ../figures/echofraction_scatter_obs_vs_dom02_with_err.pdf
   fig16_reflectivity_distribution:
     cmd: python fig16_reflectivity_histogram.py
     wdir: notebooks
@@ -222,19 +320,6 @@ stages:
     - ../figures/Cloudfraction_dependency_on_PW_comparison.pdf
     - ../figures/Cloudfraction_dependency_on_T_comparison.pdf
     - ../figures/Cloudfraction_dependency_on_v_comparison.pdf
-  calc_TOA_fluxes:
-    cmd: python calc_TOAfluxes.py
-    wdir: src/analysis
-    deps:
-    - ../../data/external/CERES_SYN1deg-1H_Terra-Aqua-MODIS_Ed4.1_Subset_20200101-20200331.nc
-    params:
-    - ../../config/mesoscale_params.yaml:
-      - metrics.geobounds.lat_max
-      - metrics.geobounds.lat_min
-      - metrics.geobounds.lon_max
-      - metrics.geobounds.lon_min
-    outs:
-    - ../../data/result/daily_cloud_radiative_effects.json
   fig18_TOA_fluxes:
     cmd: python fig18_toa_fluxes.py --no-highClouds
     wdir: notebooks
@@ -256,91 +341,6 @@ stages:
     - ../figures/Daily_netTOA_obs_vs_sim_dom02.pdf
     - ../figures/cre_scatter_obs_vs_dom02.html
     - ../figures/netTOA_scatter_obs_vs_dom02.html
-  create_high_cloud_mask:
-    cmd: python src/analysis/create_highcloud_mask.py
-    wdir: ./
-    deps:
-    - ./data/result/mesoscale_organization_metrics_goes16_DOM01_.nc
-    - ./data/result/mesoscale_organization_metrics_goes16_DOM02_.nc
-    - ./data/result/mesoscale_organization_metrics_rttov_DOM01_2.nc
-    - ./data/result/mesoscale_organization_metrics_rttov_DOM02_2.nc
-    - ./data/result/mesoscale_organization_metrics_rttov_DOM03_2.nc
-    params:
-    - ./config/mesoscale_params.yaml:
-      - metrics.BTbounds.threshold_discard_percentile
-      - metrics.BTbounds.threshold_discard_temperature
-      - metrics.geobounds.lat_max
-      - metrics.geobounds.lat_min
-      - metrics.geobounds.lon_max
-      - metrics.geobounds.lon_min
-    outs:
-    - ./data/result/no_high_clouds_DOM01.pq
-    - ./data/result/no_high_clouds_DOM02.pq
-  calc_tradewind_stats:
-    cmd: python calc_tradewind_BL_stats.py
-    wdir: src/analysis
-    params:
-    - ../../config/mesoscale_params.yaml:
-      - metrics.geobounds.lat_max
-      - metrics.geobounds.lat_min
-      - metrics.geobounds.lon_max
-      - metrics.geobounds.lon_min
-    outs:
-    - ../../data/result/tradewind_BL_profiles.nc
-    - ../../data/intermediate/theta_l_gradient.zarr
-    - ../../figures/area_selected_for_tradewind_BL_statistics.pdf
-  fig05_boundary_layer:
-    cmd: python fig05_tradewind_boundary_layer_variability.py
-    wdir: notebooks
-    deps:
-    - ../data/intermediate/theta_l_gradient.zarr
-    - ../data/result/tradewind_BL_profiles.nc
-    params:
-    - ../config/mesoscale_params.yaml:
-      - metrics.geobounds.lat_max
-      - metrics.geobounds.lat_min
-      - metrics.geobounds.lon_max
-      - metrics.geobounds.lon_min
-    outs:
-    - ../figures/profiles_3D_cf_DOM02_(13.3, -57.717)+1_mean.pdf
-    - ../figures/profiles_3D_qc_DOM02_(13.3, -57.717)+1_mean.pdf
-    - ../figures/profiles_3D_qt_DOM02_(13.3, -57.717)+1_mean.pdf
-    - ../figures/profiles_3D_wspd_DOM02_(13.3, -57.717)+1_mean.pdf
-    - ../figures/profiles_3D_θₗ_DOM02_(13.3, -57.717)+1_mean.pdf
-  fig08_pattern_areafraction_scatter:
-    cmd: python fig08_pattern_areafraction_daily.py
-    wdir: notebooks
-    deps:
-    - ../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM02_exp2.pkl
-    - ../data/result/no_high_clouds_DOM02.pq
-    outs:
-    - ../figures/Pattern_area_fraction_scatter.pdf
-  fig09_pattern_areafraction_comparison:
-    cmd: python fig09_pattern_areafraction.py
-    wdir: notebooks
-    deps:
-    - ../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM01_exp2.pkl
-    - ../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM02_exp2.pkl
-    outs:
-    - ../figures/Comparison_NN_mean_diff_to_obs_expexp2.dom1-exp2.dom2.pdf
-  fig15_echofraction_scatter:
-    cmd: python fig15_echofraction_daily.py
-    wdir: notebooks
-    deps:
-    - ../data/result/no_high_clouds_DOM02.pq
-    - ../data/result/profile_means.nc
-    - ../data/result/profile_stderr_means.nc
-    outs:
-    - ../figures/daily_echo_fraction_anomaly_timeseries@300m_ICON312m+OBS.pdf
-    - ../figures/echofraction_scatter_obs_vs_dom02_with_err.pdf
-  calc_echofraction:
-    cmd: python calc_echofraction.py
-    wdir: src/analysis
-    deps:
-    - ../../data/result/no_high_clouds_DOM02.pq
-    outs:
-    - ../../data/result/profile_means.nc
-    - ../../data/result/profile_stderr_means.nc
   figS04_clearsky_fluxes:
     cmd: python notebooks/figS4_clearsky_fluxes.py
     wdir: ./
