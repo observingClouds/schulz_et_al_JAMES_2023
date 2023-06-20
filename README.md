@@ -1,6 +1,6 @@
 # Supplemental material to Schulz et al. (submitted)
 
-This repository contains the analysis scripts of Schulz et al. (submitted) and is archived at under the [DOI 10.5281/zenodo.7582494](www.doi.org/10.5281/zenodo.7582494).
+This repository contains the analysis scripts of Schulz et al. (submitted) and is archived under the [DOI 10.5281/zenodo.7582494](www.doi.org/10.5281/zenodo.7582494).
 
 The entire analysis can be reproduced (sufficient compute resources provided) with
 
@@ -14,7 +14,7 @@ Parts of the analysis ( see `dvc.yaml` for partial analysis names ) can be repro
 ```
 git clone schulz_et_al_JAMES_2023
 mamba env create -n schulz_et_al_2023 -f environment.yaml
-dvc repro pattern_cloudfraction_fig16
+dvc repro fig14_pattern_cloudfraction
 ```
 
 The exact versions of packages that have been used are provided in `environment.yaml.pinned`
