@@ -55,27 +55,6 @@ if __name__ == "__main__":  # noqa: C901
         )[:-4]
         + ".nc"
     )
-    df_goes16_dom2 = xr.open_dataset(
-        cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-            type="goes16", DOM=2, exp="_"
-        )[:-4]
-        + ".nc"
-    )
-    df_rttov_dom1 = xr.open_dataset(
-        cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-            type="rttov", DOM=2, exp=2
-        )
-    )
-    df_rttov_dom2 = xr.open_dataset(
-        cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-            type="rttov", DOM=2, exp=2
-        )
-    )
-    df_rttov_dom2 = xr.open_dataset(
-        cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-            type="rttov", DOM=3, exp=2
-        )
-    )
     fig_output_folder = cfg.ANALYSIS.MESOSCALE.METRICS.dir_figures
     resampling = "10T"
 
@@ -281,69 +260,22 @@ if __name__ == "__main__":  # noqa: C901
     plt.xlabel("date / UTC mm/dd")
     plt.xlim(datetime.datetime(2020, 1, 12), datetime.datetime(2020, 2, 20))
     axs.xaxis.set_major_formatter(md.DateFormatter(fmt="%m/%d"))
-    axs.set_ylim(0, 0.62)
+    axs.set_ylim(0, 0.65)
 
     ax = axs
-    ax.set_yticks([np.round(obs_overall_25th, 2), np.round(obs_overall_75th, 2)])
-    ax.set_yticks(np.arange(0, 0.62, 0.1), minor=True)
-    ax_obs_all_mean = ph.add_twin(
-        ax, color="k", labelcolor="k", width=2, direction="out"
-    )
-    ax_obs_all_mean.set_yticks([np.round(obs_overall_mean, 2)])
-    ax_obs_all_mean.set_ylim(0, 0.62)
-
-    ax_DOM01_all = ph.add_twin(
-        ax,
-        color=conf_dict["DOM01"]["color"],
-        labelcolor=conf_dict["DOM01"]["color"],
-        width=2,
-    )
-    ax_DOM01_all.set_yticks([means["DOM01_overall_mean"]], [])
-    ax_DOM01_all.set_ylim(0, 0.62)
-
-    ax_DOM01_all_per = ph.add_twin(
-        ax,
-        color=conf_dict["DOM01"]["color"],
-        labelcolor=conf_dict["DOM01"]["color"],
-        width=1,
-    )
-    ax_DOM01_all_per.set_yticks(
-        [means["DOM01_overall_25th"], means["DOM01_overall_75th"]], []
-    )
-    ax_DOM01_all_per.set_ylim(0, 0.62)
-
-    ax_DOM02_all = ph.add_twin(
-        ax,
-        color=conf_dict["DOM02"]["color"],
-        labelcolor=conf_dict["DOM02"]["color"],
-        width=2,
-    )
-    ax_DOM02_all.set_yticks([means["DOM02_overall_mean"]], [])
-    ax_DOM02_all.set_ylim(0, 0.62)
-
-    ax_DOM02_all_per = ph.add_twin(
-        ax,
-        color=conf_dict["DOM02"]["color"],
-        labelcolor=conf_dict["DOM02"]["color"],
-        width=1,
-    )
-    ax_DOM02_all_per.set_yticks(
-        [means["DOM02_overall_25th"], means["DOM02_overall_75th"]], []
-    )
-    ax_DOM02_all_per.set_ylim(0, 0.62)
-
+    ax.set_yticks(np.arange(0, 0.65, 0.1), minor=True)
     ax_obs_low_clouds = ax.twinx()
     ax_obs_low_clouds.set_yticks(
         [np.round(obs_lowcloud_25th, 2), np.round(obs_lowcloud_75th, 2)]
     )
-    ax_obs_low_clouds.set_ylim(0, 0.62)
-    ax_obs_low_clouds.set_yticks(np.arange(0, 0.62, 0.1), minor=True)
+    ax_obs_low_clouds.set_ylim(0, 0.65)
+    ax_obs_low_clouds.set_yticks(np.arange(0, 0.65, 0.1), minor=True)
 
     ax_obs_low_clouds_mean = ph.add_twin_right(
         ax, color="k", labelcolor="k", width=2, direction="out"
     )
     ax_obs_low_clouds_mean.set_yticks([np.round(obs_lowcloud_mean, 2)])
-    ax_obs_low_clouds_mean.set_ylim(0, 0.62)
+    ax_obs_low_clouds_mean.set_ylim(0, 0.65)
 
     ax_DOM01_lowclouds = ph.add_twin_right(
         ax,
@@ -352,7 +284,7 @@ if __name__ == "__main__":  # noqa: C901
         width=2,
     )
     ax_DOM01_lowclouds.set_yticks([means["DOM01_lowclouds_mean"]], [])
-    ax_DOM01_lowclouds.set_ylim(0, 0.62)
+    ax_DOM01_lowclouds.set_ylim(0, 0.65)
 
     ax_DOM01_lowclouds_per = ph.add_twin_right(
         ax,
@@ -363,7 +295,7 @@ if __name__ == "__main__":  # noqa: C901
     ax_DOM01_lowclouds_per.set_yticks(
         [means["DOM01_lowclouds_25th"], means["DOM01_lowclouds_75th"]], []
     )
-    ax_DOM01_lowclouds_per.set_ylim(0, 0.62)
+    ax_DOM01_lowclouds_per.set_ylim(0, 0.65)
 
     ax_DOM02_lowclouds = ph.add_twin_right(
         ax,
@@ -372,7 +304,7 @@ if __name__ == "__main__":  # noqa: C901
         width=2,
     )
     ax_DOM02_lowclouds.set_yticks([means["DOM02_lowclouds_mean"]], [])
-    ax_DOM02_lowclouds.set_ylim(0, 0.62)
+    ax_DOM02_lowclouds.set_ylim(0, 0.65)
 
     ax_DOM02_lowclouds_per = ph.add_twin_right(
         ax,
@@ -383,7 +315,7 @@ if __name__ == "__main__":  # noqa: C901
     ax_DOM02_lowclouds_per.set_yticks(
         [means["DOM02_lowclouds_25th"], means["DOM02_lowclouds_75th"]], []
     )
-    ax_DOM02_lowclouds_per.set_ylim(0, 0.62)
+    ax_DOM02_lowclouds_per.set_ylim(0, 0.65)
 
     axs.legend(frameon=False, bbox_to_anchor=(1.1, 1))
 
@@ -587,7 +519,7 @@ if __name__ == "__main__":  # noqa: C901
     plt.savefig(out_path, bbox_inches="tight")
 
     # +
-    ylims = (0, 0.201)
+    ylims = (0, 0.261)
     fig, axs = plt.subplots(1, 1, figsize=(8, 2.2), dpi=300)
     df_simulation = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
@@ -707,78 +639,11 @@ if __name__ == "__main__":  # noqa: C901
 
     plt.ylabel(r"$C_{\mathrm{B}}$")
     plt.xlabel("date / UTC mm/dd")
-    # plt.xlim(datetime.datetime(2020,1,12), datetime.datetime(2020,2,20))
     axs.xaxis.set_major_formatter(md.DateFormatter(fmt="%m/%d"))
     axs.set_ylim(ylims)
 
     ax = axs
-    ax.set_yticks([np.round(obs_overall_25th, 2), np.round(obs_overall_75th, 2)])
     ax.set_yticks(np.arange(*ylims, 0.1), minor=True)
-    ax_obs_all_mean = ph.add_twin(
-        ax, color="k", labelcolor="k", width=2, direction="out"
-    )
-    ax_obs_all_mean.set_yticks([np.round(obs_overall_mean, 2)])
-    ax_obs_all_mean.set_ylim(ylims)
-
-    ax_DOM01_all = ph.add_twin(
-        ax,
-        color=conf_dict["DOM01"]["color"],
-        labelcolor=conf_dict["DOM01"]["color"],
-        width=2,
-    )
-    ax_DOM01_all.set_yticks([means["DOM01_overall_mean"]], [])
-    ax_DOM01_all.set_ylim(ylims)
-
-    ax_DOM01_all_per = ph.add_twin(
-        ax,
-        color=conf_dict["DOM01"]["color"],
-        labelcolor=conf_dict["DOM01"]["color"],
-        width=1,
-    )
-    ax_DOM01_all_per.set_yticks(
-        [means["DOM01_overall_25th"], means["DOM01_overall_75th"]], []
-    )
-    ax_DOM01_all_per.set_ylim(ylims)
-
-    ax_DOM02_all = ph.add_twin(
-        ax,
-        color=conf_dict["DOM02"]["color"],
-        labelcolor=conf_dict["DOM02"]["color"],
-        width=2,
-    )
-    ax_DOM02_all.set_yticks([means["DOM02_overall_mean"]], [])
-    ax_DOM02_all.set_ylim(ylims)
-
-    ax_DOM02_all_per = ph.add_twin(
-        ax,
-        color=conf_dict["DOM02"]["color"],
-        labelcolor=conf_dict["DOM02"]["color"],
-        width=1,
-    )
-    ax_DOM02_all_per.set_yticks(
-        [means["DOM02_overall_25th"], means["DOM02_overall_75th"]], []
-    )
-    ax_DOM02_all_per.set_ylim(ylims)
-
-    ax_DOM03_all = ph.add_twin(
-        ax,
-        color=conf_dict["DOM03"]["color"],
-        labelcolor=conf_dict["DOM03"]["color"],
-        width=2,
-    )
-    ax_DOM03_all.set_yticks([means["DOM03_overall_mean"]], [])
-    ax_DOM03_all.set_ylim(ylims)
-
-    ax_DOM03_all_per = ph.add_twin(
-        ax,
-        color=conf_dict["DOM03"]["color"],
-        labelcolor=conf_dict["DOM03"]["color"],
-        width=1,
-    )
-    ax_DOM03_all_per.set_yticks(
-        [means["DOM03_overall_25th"], means["DOM03_overall_75th"]], []
-    )
-    ax_DOM03_all_per.set_ylim(ylims)
 
     ax_obs_low_clouds = ax.twinx()
     ax_obs_low_clouds.set_yticks(
