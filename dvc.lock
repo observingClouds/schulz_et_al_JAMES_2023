@@ -602,3 +602,24 @@ stages:
     - path: ../figures/cloud_cover_scatter_nohighclouds_and_highclouds.pdf
       md5: 4de476ceb8b5282da0176f0ed64283e6
       size: 15079
+  figS04_clearsky_fluxes:
+    cmd: python notebooks/figS4_clearsky_fluxes.py
+    deps:
+    - path: ./data/result/max_pattern_freq.nc
+      md5: 92ba9d83cfae0911b7f5861f752a3a8e
+      size: 14169
+    - path: ./data/result/no_high_clouds_DOM02.pq
+      md5: 8cc402c9050431723c4fbe693400fc2c
+      size: 1977
+    - path: ./notebooks/figS4_clearsky_fluxes.py
+      md5: e45bc9f4570eda8f7ef64b37c308e3d3
+      size: 2949
+    params:
+      config/mesoscale_params.yaml:
+        manual_classifications.threshold_pattern: 0.4
+      config/paths.cfg:
+        ANALYSIS.CRE.output_filename_fmt: ${PROJECT.main}/data/result/daily_cloud_radiative_effects.json
+    outs:
+    - path: ./figures/figureS04.pdf
+      md5: cc5424f970eca5d1d3c2a9f13a7dd2d3
+      size: 14838
