@@ -259,9 +259,12 @@ if __name__ == "__main__":  # noqa: C901
                 dims=["time"],
                 coords={"time": ds_LES_ctrl_DOM02.time},
             )
-            q_sim_DOM02 = d_sim_DOM02.quantile(
-                percentiles, method="nearest", skipna=True
-            ).compute()
+            q_sim_DOM02 = (
+                d_sim_DOM02.resample(time="1D")
+                .mean()
+                .quantile(percentiles, method="nearest", skipna=True)
+                .compute()
+            )
 
             u_sim = ds_LES_ctrl_DOM01["U10M"].values * units("m/s")
             v_sim = ds_LES_ctrl_DOM01["V10M"].values * units("m/s")
@@ -270,9 +273,12 @@ if __name__ == "__main__":  # noqa: C901
                 dims=["time"],
                 coords={"time": ds_LES_ctrl_DOM01.time},
             )
-            q_sim_DOM01 = d_sim_DOM01.quantile(
-                percentiles, method="nearest", skipna=True
-            ).compute()
+            q_sim_DOM01 = (
+                d_sim_DOM01.resample(time="1D")
+                .mean()
+                .quantile(percentiles, method="nearest", skipna=True)
+                .compute()
+            )
         elif hue_var_sim == "LTS":
             d_sim_DOM01 = (
                 ds_LES_ctrl_DOM01[hue_var_sim]
@@ -297,13 +303,17 @@ if __name__ == "__main__":  # noqa: C901
         else:
             d_sim_DOM01 = ds_LES_ctrl_DOM01[hue_var_sim]
             q_sim_DOM01 = (
-                d_sim_DOM01.chunk(time=-1)
+                d_sim_DOM01.resample(time="1D")
+                .mean()
+                .chunk(time=-1)
                 .quantile(percentiles, method="nearest", skipna=True)
                 .compute()
             )
             d_sim_DOM02 = ds_LES_ctrl_DOM02[hue_var_sim]
             q_sim_DOM02 = (
-                d_sim_DOM02.chunk(time=-1)
+                d_sim_DOM02.resample(time="1D")
+                .mean()
+                .chunk(time=-1)
                 .quantile(percentiles, method="nearest", skipna=True)
                 .compute()
             )
@@ -325,9 +335,11 @@ if __name__ == "__main__":  # noqa: C901
                     .compute()
                 )
             else:
-                d_obs = ds_sfc_met_common[hue_var_obs]
+                d_obs = ds_sfc_met_common[hue_var_obs]  # .resample(time='1D').mean()
                 q_obs = (
-                    d_obs.chunk(time=-1)
+                    d_obs.resample(time="1D")
+                    .mean()
+                    .chunk(time=-1)
                     .quantile(percentiles, method="nearest", skipna=True)
                     .compute()
                 )

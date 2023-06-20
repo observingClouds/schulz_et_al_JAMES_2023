@@ -61,8 +61,7 @@ if __name__ == "__main__":  # noqa: C901
     }
 
     cat_address = (
-        "https://raw.githubusercontent.com/observingClouds/"
-        "eurec4a-intake/ICON-LES-control-DOM03/catalog.yml"
+        "https://raw.githubusercontent.com/eurec4a/eurec4a-intake/master/catalog.yml"
     )
     cat = open_catalog(cat_address)
 
@@ -590,7 +589,7 @@ if __name__ == "__main__":  # noqa: C901
 
             axs[p].set_ylim(0, 5)
             axs[p].set_xlim(0, 40)
-            axs[p].annotate(f"$N={len(ds_sel.time)}$", (25, 4.6), fontsize=7)
+            axs[p].annotate(f"$N={len(ds_sel.time)}$", (17, 4.4), fontsize=11)
 
             axs[p].set_xticks([np.round(mean.CF_kaband.max(), 1)])
             axs[p].set_xticks(np.arange(0, 41, 10), minor=True)
@@ -619,7 +618,7 @@ if __name__ == "__main__":  # noqa: C901
                 handles=[l1, l2, l3, l4],
                 labels=["cloud radar", "ICON 624m", "ICON 312m", "ICON 156m"],
                 loc="upper center",
-                bbox_to_anchor=(0.5, -0.4),
+                bbox_to_anchor=(-0.4, -0.4),
                 fancybox=False,
                 shadow=False,
                 ncol=2,

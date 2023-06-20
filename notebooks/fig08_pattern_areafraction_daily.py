@@ -61,10 +61,18 @@ df_all = reduce(
 
 df_daily_mean = df_all.resample("1D").mean()
 
-df_no_high_clouds = pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+df_no_high_clouds = (
+    pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+    .set_index("no_high_cloud")
+    .loc["2020-01-11":"2020-02-18"]
+    .reset_index()
+)
 
 # +
 high_clouds = False
+
+print(len(df_no_high_clouds))
+print(len(df_daily_mean))
 
 fig, axs = plt.subplots(1, 4, sharey=True, sharex=True, figsize=(8, 4), dpi=150)
 for p, pattern in enumerate(["Sugar", "Gravel", "Flowers", "Fish"]):
@@ -74,12 +82,15 @@ for p, pattern in enumerate(["Sugar", "Gravel", "Flowers", "Fish"]):
         selection = df_daily_mean.loc[df_no_high_clouds.no_high_cloud]
     ranks_icon = selection[f"{pattern}_area_fraction_IIR"]
     ranks_abi = selection[f"{pattern}_area_fraction_AIR"]
+    ranks = pd.concat([ranks_icon, ranks_abi], axis=1)
+    # ranks = ranks[~(ranks == 0).all(axis=1)]  # exclude 0,0 sizes
     scatter = axs[p].scatter(
-        pd.concat([ranks_icon, ranks_abi], axis=1).values.T[0],
-        pd.concat([ranks_icon, ranks_abi], axis=1).values.T[1],
+        ranks.values.T[0],
+        ranks.values.T[1],
         label=pattern,
         color="grey",
-        marker=".",
+        marker="o",
+        facecolors="none",
         clip_on=False,
         s=20,
     )

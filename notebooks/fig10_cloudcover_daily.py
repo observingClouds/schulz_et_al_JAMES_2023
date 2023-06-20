@@ -15,6 +15,7 @@
 
 # works with xarray version 2012.10.0, but not with 2012.11.0 and 2012.12.0
 
+import argparse
 import logging
 import sys
 
@@ -25,9 +26,26 @@ import numpy as np
 import pandas as pd
 import scipy
 import seaborn as sns
+import statsmodels.api as sm
 import xarray as xr
 from intake import open_catalog
 from omegaconf import OmegaConf
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--highClouds",
+    action="store_true",
+    help="Flag indicating whether high clouds should be included in output figure",
+)
+parser.add_argument(
+    "--no-highClouds",
+    dest="highClouds",
+    action="store_false",
+    help="Flag indicating whether high clouds should be included in output figure",
+)
+parser.set_defaults(highClouds=True)
+
+args = parser.parse_args()
 
 sys.path.append("../src/helpers/")
 
@@ -59,11 +77,7 @@ if __name__ == "__main__":
             type="rttov", DOM=2, exp=2
         )
     )
-    df_rttov_dom2 = xr.open_dataset(
-        cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-            type="rttov", DOM=3, exp=2
-        )
-    )
+
     fig_output_folder = cfg.ANALYSIS.MESOSCALE.METRICS.dir_figures
     resampling = "10T"
 
@@ -107,27 +121,29 @@ if __name__ == "__main__":
             type="rttov", DOM=1, exp=2
         )
     )
-    df_simulation = df_simulation.isel(index=df_simulation.percentile_BT > 100)
+    df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
     times_sim = set(df_simulation.time.values)
     times_obs = set(df_goes16_dom1.time.values)
     common_times = sorted(times_obs.intersection(times_sim))
-    data_obs = df_goes16_dom1.set_index(index="time").sel(
-        index=slice("2020-01-10", np.max(list(common_times)))
-    )
+    data_obs = df_goes16_dom1.sel(time=slice("2020-01-10", np.max(list(common_times))))
 
-    obs_1D_mean = data_obs.cloud_fraction.resample(index="1D").mean().compute()
+    obs_1D_mean = data_obs.cloud_fraction.resample(time="1D").mean().compute()
 
     df_simulation = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
             type="rttov", DOM=2, exp=2
         )
     )
-    df_simulation = df_simulation.set_index(index="time")
-    DOM02_1D_mean = df_simulation.cloud_fraction.resample(index="1D").mean().compute()
+    DOM02_1D_mean = df_simulation.cloud_fraction.resample(time="1D").mean().compute()
 
-    times = list(set(obs_1D_mean.index.values).intersection(DOM02_1D_mean.index.values))
+    times = list(set(obs_1D_mean.time.values).intersection(DOM02_1D_mean.time.values))
 
-    df_nohighClouds = pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+    df_nohighClouds = (
+        pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+        .set_index("no_high_cloud")
+        .loc["2020-01-11":"2020-02-18"]
+        .reset_index()
+    )
 
     # +
     ds_max = xr.open_dataset("../data/result/max_pattern_freq.nc")
@@ -145,22 +161,21 @@ if __name__ == "__main__":
         "Unclassified": "grey",
     }
 
+    avail_times = sorted(
+        set(times).intersection(set(df_nohighClouds["no_high_cloud"].values))
+    )
+
+    print(avail_times)
     # +
     fig, axs = plt.subplots(1, 1)
-    data_1_nohigh = (
-        DOM02_1D_mean.sel(index=times).sel(index=list(df_nohighClouds["no_high_cloud"]))
-        * 100
-    )
-    data_2_nohigh = (
-        obs_1D_mean.sel(index=times).sel(index=list(df_nohighClouds["no_high_cloud"]))
-        * 100
-    )
+    data_1_nohigh = DOM02_1D_mean.sel(time=avail_times) * 100
+    data_2_nohigh = obs_1D_mean.sel(time=avail_times) * 100
 
-    data_1_withhigh = DOM02_1D_mean.sel(index=times) * 100
-    data_2_withhigh = obs_1D_mean.sel(index=times) * 100
+    data_1_withhigh = DOM02_1D_mean.sel(time=times) * 100
+    data_2_withhigh = obs_1D_mean.sel(time=times) * 100
 
     colors = []
-    for date in data_1_nohigh.index.values:
+    for date in data_1_nohigh.time.values:
         if max_freq.sel(date=date) > threshold_freq:
             color = color_dict[
                 mean_pattern_freq.pattern.values[max_pattern.sel(date=date)]
@@ -170,19 +185,19 @@ if __name__ == "__main__":
             colors.append("grey")
 
     axs.scatter(data_1_nohigh, data_2_nohigh, color=colors, s=30, zorder=100)
-    colors = []
-    for date in data_1_withhigh.index.values:
-        if max_freq.sel(date=date) > threshold_freq:
-            color = color_dict[
-                mean_pattern_freq.pattern.values[max_pattern.sel(date=date)]
-            ]
-            colors.append(color)
-        else:
-            colors.append("grey")
-    axs.scatter(
-        data_1_withhigh, data_2_withhigh, color=colors, s=30, zorder=1, alpha=0.2
-    )
-    # sns.regplot(obs_1D_mean.sel(index=times), DOM02_1D_mean.sel(index=times))
+    if args.highClouds:
+        colors = []
+        for date in data_1_withhigh.time.values:
+            if max_freq.sel(date=date) > threshold_freq:
+                color = color_dict[
+                    mean_pattern_freq.pattern.values[max_pattern.sel(date=date)]
+                ]
+                colors.append(color)
+            else:
+                colors.append("grey")
+        axs.scatter(
+            data_1_withhigh, data_2_withhigh, color=colors, s=30, zorder=1, marker="+"
+        )
     slope, intercept, _, _, _ = scipy.stats.linregress(x=data_1_nohigh, y=data_2_nohigh)
 
     def regression_func(x):
@@ -193,33 +208,52 @@ if __name__ == "__main__":
         [regression_func(f) for f in (np.min(data_1_nohigh), np.max(data_1_nohigh))],
         color="black",
     )
+    if args.highClouds:
+        y_pos = 6
+    else:
+        y_pos = 3
     axs.text(
         14,
-        6,
+        y_pos,
         r"$C_{\mathrm{B}}\mathrm{(OBS)}}$"
         + f"={slope:.2f}"
         + r"$\cdot C_{\mathrm{B}}\mathrm{(SIM)}}$"
         + f"+{intercept:.2f}",
     )
+    if args.highClouds:
+        slope, intercept, _, _, _ = scipy.stats.linregress(
+            x=data_1_withhigh, y=data_2_withhigh
+        )
+        axs.plot(
+            [np.min(data_1_withhigh), np.max(data_1_withhigh)],
+            [
+                regression_func(f)
+                for f in (np.min(data_1_withhigh), np.max(data_1_withhigh))
+            ],
+            color="black",
+            alpha=0.2,
+        )
+        axs.text(
+            14,
+            3,
+            r"$C_{\mathrm{B}}\mathrm{(OBS)}}$"
+            + f"={slope:.2f}"
+            + r"$\cdot C_{\mathrm{B}}\mathrm{(SIM)}}$"
+            + f"+{intercept:.2f}",
+            alpha=0.3,
+        )
 
-    slope, intercept, _, _, _ = scipy.stats.linregress(
-        x=data_1_withhigh, y=data_2_withhigh
-    )
-    axs.plot(
-        [np.min(data_1_withhigh), np.max(data_1_withhigh)],
-        [regression_func(f) for f in (np.min(data_1_withhigh), np.max(data_1_withhigh))],
-        color="black",
-        alpha=0.2,
-    )
-    axs.text(
-        14,
-        3,
-        r"$C_{\mathrm{B}}\mathrm{(OBS)}}$"
-        + f"={slope:.2f}"
-        + r"$\cdot C_{\mathrm{B}}\mathrm{(SIM)}}$"
-        + f"+{intercept:.2f}",
-        alpha=0.3,
-    )
+    # 95%-confidence interval
+    srt = np.argsort(data_1_nohigh.values)
+    X = sm.add_constant(data_1_nohigh.values[srt])
+    ols_model = sm.OLS(data_2_nohigh.values[srt], X)
+    est = ols_model.fit()
+    out = est.conf_int(alpha=0.05, cols=None)
+    y_pred = est.predict(X)
+    x_pred = data_1_nohigh.values[srt]
+    pred = est.get_prediction(X).summary_frame()
+    axs.plot(x_pred, pred["mean_ci_lower"], linestyle="--", color="black")
+    axs.plot(x_pred, pred["mean_ci_upper"], linestyle="--", color="black")
 
     axs.set_ylabel(r"$C_{\mathrm{B}}\mathrm{(OBS)}}$ / %")
     axs.set_xlabel(r"$C_{\mathrm{B}}\mathrm{(SIM)}}$ / %")
@@ -233,55 +267,33 @@ if __name__ == "__main__":
     )
     sns.despine()
     axs.set_aspect(1)
-    plt.savefig(
-        "../figures/cloud_cover_scatter_nohighclouds_and_highclouds.pdf",
-        bbox_inches="tight",
-    )
+    if args.highClouds:
+        plt.savefig(
+            "../figures/cloud_cover_scatter_nohighclouds_and_highclouds.pdf",
+            bbox_inches="tight",
+        )
+    else:
+        plt.savefig(
+            "../figures/cloud_cover_scatter_nohighclouds.pdf",
+            bbox_inches="tight",
+        )
     # -
 
     print("Statistics without high clouds")
     print(
         "DOM02 mean:",
-        (
-            DOM02_1D_mean.sel(index=times).sel(
-                index=list(df_nohighClouds["no_high_cloud"])
-            )
-            * 100
-        )
-        .mean()
-        .item(0),
+        (DOM02_1D_mean.sel(time=times).sel(time=avail_times) * 100).mean().item(0),
     )
     print(
         "DOM02 median:",
-        (
-            DOM02_1D_mean.sel(index=times).sel(
-                index=list(df_nohighClouds["no_high_cloud"])
-            )
-            * 100
-        )
-        .median()
-        .item(0),
+        (DOM02_1D_mean.sel(time=times).sel(time=avail_times) * 100).median().item(0),
     )
     print(
         "OBS mean:",
-        (
-            obs_1D_mean.sel(index=times).sel(
-                index=list(df_nohighClouds["no_high_cloud"])
-            )
-            * 100
-        )
-        .mean()
-        .item(0),
+        (obs_1D_mean.sel(time=avail_times) * 100).mean().item(0),
     )
     print(
         "OBS median:",
-        (
-            obs_1D_mean.sel(index=times).sel(
-                index=list(df_nohighClouds["no_high_cloud"])
-            )
-            * 100
-        )
-        .median()
-        .item(0),
+        (obs_1D_mean.sel(time=avail_times) * 100).median().item(0),
     )
     print(f"based on {len(times)} days")

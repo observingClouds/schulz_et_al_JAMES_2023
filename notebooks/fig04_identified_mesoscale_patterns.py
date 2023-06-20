@@ -28,17 +28,24 @@
 # +
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 import xarray as xr
 from omegaconf import OmegaConf
 
 cfg = OmegaConf.load("../config/paths.cfg")
 params = OmegaConf.load("../config/mesoscale_params.yaml")
+simulation_params = OmegaConf.load("../config/simulation.yaml")
 
 threshold_freq = params.manual_classifications.threshold_pattern
+start_analysis = simulation_params.ICON312m.dates.start_analysis
+stop_analysis = simulation_params.ICON312m.dates.stop_analysis
+dates_of_interest = pd.date_range(start_analysis, stop_analysis, freq="1D")
 
-ds_max_fn = cfg.ANALYSIS.MESOSCALE.CLASSIFICATIONS.manual.IR.class_decision
+ds_max_fn = cfg.ANALYSIS.MESOSCALE.CLASSIFICATIONS.manual.IR.classes
 ds_max = xr.open_dataset(ds_max_fn)
+ds_max = ds_max.sel(date=dates_of_interest)
+
 
 color_dict = {
     "Sugar": "#A1D791",
