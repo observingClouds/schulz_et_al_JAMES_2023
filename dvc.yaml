@@ -41,6 +41,12 @@ stages:
     wdir: src/analysis
     deps:
     - ../../data/external/NN_classifications
+    params:
+    - ./config/mesoscale_params.yaml:
+      - agreement.geobounds.lat_max
+      - agreement.geobounds.lat_min
+      - agreement.geobounds.lon_max
+      - agreement.geobounds.lon_min
     outs:
     - ../../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM01_exp2.pkl
     - ../../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM02_exp2.pkl

@@ -21,7 +21,6 @@ from omegaconf import OmegaConf
 experiment = 2
 label_map = {"Sugar": 0, "Fish": 3, "Flowers": 2, "Flower": 2, "Gravel": 1}
 label_map_rv = {0: "Sugar", 1: "Gravel", 2: "Flowers", 3: "Fish"}
-lat0, lat1, lon0, lon1 = [7.5, 17, -60.25, -45]
 color_dict = {
     "Sugar": "#A1D791",
     "Fish": "#2281BB",
@@ -31,10 +30,10 @@ color_dict = {
 
 params = OmegaConf.load("../../config/mesoscale_params.yaml")
 geobounds = {}
-geobounds["lat_min"] = params.metrics.geobounds.lat_min
-geobounds["lat_max"] = params.metrics.geobounds.lat_max
-geobounds["lon_min"] = params.metrics.geobounds.lon_min
-geobounds["lon_max"] = params.metrics.geobounds.lon_max
+geobounds["lat_min"] = params.agreement.geobounds.lat_min
+geobounds["lat_max"] = params.agreement.geobounds.lat_max
+geobounds["lon_min"] = params.agreement.geobounds.lon_min
+geobounds["lon_max"] = params.agreement.geobounds.lon_max
 
 
 def iou_one_class_from_annos(arr1, arr2, return_iou=False):

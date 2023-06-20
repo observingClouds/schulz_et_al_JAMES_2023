@@ -19,3 +19,9 @@ metrics:
     step: '10T'
 manual_classifications:
    threshold_pattern: 0.4
+agreement:
+  geobounds:
+    lat_min: 7.5
+    lat_max: 17
+    lon_min: -60.3
+    lon_max: -45.0
