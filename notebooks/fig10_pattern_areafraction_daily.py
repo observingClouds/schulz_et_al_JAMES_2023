@@ -61,7 +61,12 @@ df_all = reduce(
 
 df_daily_mean = df_all.resample("1D").mean()
 
-df_no_high_clouds = pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+df_no_high_clouds = (
+    pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+    .set_index("no_high_cloud")
+    .loc["2020-01-11":"2020-02-18"]
+    .reset_index()
+)
 
 # +
 high_clouds = False
