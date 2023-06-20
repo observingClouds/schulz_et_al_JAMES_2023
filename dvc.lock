@@ -539,7 +539,7 @@ stages:
     cmd: python src/analysis/calc_cloudfraction.py
     params:
       config/mesoscale_params.yaml:
-        metrics.BTbounds.threshold_cluster_llimit: 280
+        metrics.BTbounds.threshold_cluster_llimit: 270
         metrics.BTbounds.threshold_cluster_ulimit: 290
         metrics.BTbounds.threshold_discard_percentile: 25
         metrics.BTbounds.threshold_discard_temperature: 285
