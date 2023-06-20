@@ -341,3 +341,17 @@ stages:
     outs:
     - ../../data/result/profile_means.nc
     - ../../data/result/profile_stderr_means.nc
+  figS04_clearsky_fluxes:
+    cmd: python notebooks/figS4_clearsky_fluxes.py
+    wdir: ./
+    deps:
+    - ./data/result/no_high_clouds_DOM02.pq
+    - ./data/result/max_pattern_freq.nc
+    - ./notebooks/figS4_clearsky_fluxes.py
+    params:
+    - ./config/paths.cfg:
+      - ANALYSIS.CRE.output_filename_fmt
+    - ./config/mesoscale_params.yaml:
+      - manual_classifications.threshold_pattern
+    outs:
+    - ./figures/figureS04.pdf
