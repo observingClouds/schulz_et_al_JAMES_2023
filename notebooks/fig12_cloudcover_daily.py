@@ -77,11 +77,7 @@ if __name__ == "__main__":
             type="rttov", DOM=2, exp=2
         )
     )
-    df_rttov_dom2 = xr.open_dataset(
-        cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
-            type="rttov", DOM=3, exp=2
-        )
-    )
+
     fig_output_folder = cfg.ANALYSIS.MESOSCALE.METRICS.dir_figures
     resampling = "10T"
 
@@ -142,7 +138,12 @@ if __name__ == "__main__":
 
     times = list(set(obs_1D_mean.time.values).intersection(DOM02_1D_mean.time.values))
 
-    df_nohighClouds = pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+    df_nohighClouds = (
+        pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+        .set_index("no_high_cloud")
+        .loc["2020-01-11":"2020-02-18"]
+        .reset_index()
+    )
 
     # +
     ds_max = xr.open_dataset("../data/result/max_pattern_freq.nc")
@@ -160,16 +161,15 @@ if __name__ == "__main__":
         "Unclassified": "grey",
     }
 
+    avail_times = sorted(
+        set(times).intersection(set(df_nohighClouds["no_high_cloud"].values))
+    )
+
+    print(avail_times)
     # +
     fig, axs = plt.subplots(1, 1)
-    data_1_nohigh = (
-        DOM02_1D_mean.sel(time=times).sel(time=list(df_nohighClouds["no_high_cloud"]))
-        * 100
-    )
-    data_2_nohigh = (
-        obs_1D_mean.sel(time=times).sel(time=list(df_nohighClouds["no_high_cloud"]))
-        * 100
-    )
+    data_1_nohigh = DOM02_1D_mean.sel(time=avail_times) * 100
+    data_2_nohigh = obs_1D_mean.sel(time=avail_times) * 100
 
     data_1_withhigh = DOM02_1D_mean.sel(time=times) * 100
     data_2_withhigh = obs_1D_mean.sel(time=times) * 100
@@ -282,42 +282,18 @@ if __name__ == "__main__":
     print("Statistics without high clouds")
     print(
         "DOM02 mean:",
-        (
-            DOM02_1D_mean.sel(time=times).sel(
-                time=list(df_nohighClouds["no_high_cloud"])
-            )
-            * 100
-        )
-        .mean()
-        .item(0),
+        (DOM02_1D_mean.sel(time=times).sel(time=avail_times) * 100).mean().item(0),
     )
     print(
         "DOM02 median:",
-        (
-            DOM02_1D_mean.sel(time=times).sel(
-                time=list(df_nohighClouds["no_high_cloud"])
-            )
-            * 100
-        )
-        .median()
-        .item(0),
+        (DOM02_1D_mean.sel(time=times).sel(time=avail_times) * 100).median().item(0),
     )
     print(
         "OBS mean:",
-        (
-            obs_1D_mean.sel(time=times).sel(time=list(df_nohighClouds["no_high_cloud"]))
-            * 100
-        )
-        .mean()
-        .item(0),
+        (obs_1D_mean.sel(time=avail_times) * 100).mean().item(0),
     )
     print(
         "OBS median:",
-        (
-            obs_1D_mean.sel(time=times).sel(time=list(df_nohighClouds["no_high_cloud"]))
-            * 100
-        )
-        .median()
-        .item(0),
+        (obs_1D_mean.sel(time=avail_times) * 100).median().item(0),
     )
     print(f"based on {len(times)} days")
