@@ -28,7 +28,7 @@ color_dict = {
     "Flowers": "#93D2E2",
 }
 
-params = OmegaConf.load("../../config/mesoscale_params.yaml")
+params = OmegaConf.load("./config/mesoscale_params.yaml")
 geobounds = {}
 geobounds["lat_min"] = params.agreement.geobounds.lat_min
 geobounds["lat_max"] = params.agreement.geobounds.lat_max
@@ -137,11 +137,11 @@ def identify_where_class_missing(arr1, arr2):
 
 for DOM in [1, 2]:
     fn_ICON_IR = (
-        "../../data/external/NN_classifications/"
+        "./data/external/NN_classifications/"
         f"GOES16_CH13_classifications_exp{experiment}_RTTOVonICONdomain_DOM0{DOM}.zarr"
     )
     fn_ABI_IR = (
-        "../../data/external/NN_classifications/"
+        "./data/external/NN_classifications/"
         f"GOES16_CH13_classifications_ABIonICONdomain_DOM0{DOM}.zarr"
     )
 
@@ -228,5 +228,5 @@ for DOM in [1, 2]:
 
     df = pd.DataFrame.from_dict(results, orient="index")
     df.to_pickle(
-        f"../../data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM0{DOM}_exp{experiment}.pkl"
+        f"./data/intermediate/agreement_results_ABI-IR_vs_ICON-DOM0{DOM}_exp{experiment}.pkl"
     )
