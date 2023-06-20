@@ -100,57 +100,58 @@ if __name__ == "__main__":  # noqa: C901
         "obs": {"label": "GOES-16 ABI", "color": "black"},
     }
 
-    geobounds = {}
-    geobounds["lat_min"] = params.metrics.geobounds.lat_min
-    geobounds["lat_max"] = params.metrics.geobounds.lat_max
-    geobounds["lon_min"] = params.metrics.geobounds.lon_min
-    geobounds["lon_max"] = params.metrics.geobounds.lon_max
+    valid_cell_limit = 0.9
+
     # -
 
     alphas = {"exp1": 0.5, "exp2": 1}
     descr = {1: "high CCN", 2: "control"}
 
-    df_simulation = xr.open_dataset(
+    df_simulation_d1 = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
             type="rttov", DOM=1, exp=2
         )
     )
-    df_simulation = df_simulation.isel(time=df_simulation.percentile_BT > 100)
-    times_sim = set(df_simulation.time.values)
-    times_obs = set(df_goes16_dom1.time.values)
-    common_times = sorted(times_obs.intersection(times_sim))
-    data_obs = df_goes16_dom1.sel(time=slice("2020-01-10", np.max(list(common_times))))
-
-    obs_1D_mean = data_obs.cloud_fraction.resample(time="1D").mean().compute()
-
-    df_simulation = xr.open_dataset(
+    df_simulation_d2 = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
             type="rttov", DOM=2, exp=2
         )
     )
-    DOM02_1D_mean = df_simulation.cloud_fraction.resample(time="1D").mean().compute()
+    times_sim_d1 = set(df_simulation_d1.time.values)
+    times_sim_d2 = set(df_simulation_d2.time.values)
+    times_obs = set(df_goes16_dom1.time.values)
+    common_times = sorted(times_obs.intersection(times_sim_d2))
 
-    times = list(set(obs_1D_mean.time.values).intersection(DOM02_1D_mean.time.values))
+    data_obs_d1 = (
+        df_goes16_dom1.drop_duplicates("time")
+        .sortby("time")
+        .sel(time=sorted(common_times))
+        .resample(time="10T")
+        .nearest(tolerance="10T")
+    )
+    data_sim_d1 = (
+        df_simulation_d1.drop_duplicates("time")
+        .sortby("time")
+        .sel(time=sorted(common_times))
+        .resample(time="10T")
+        .nearest(tolerance="10T")
+    )
+    data_sim_d2 = (
+        df_simulation_d2.drop_duplicates("time")
+        .sortby("time")
+        .sel(time=sorted(common_times))
+        .resample(time="10T")
+        .nearest(tolerance="10T")
+    )
 
-    df_nohighClouds = pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+    obs_1D_mean = data_obs_d1.cloud_fraction.resample(time="1D").mean().compute()
 
-    # +
-    ds_max = xr.open_dataset("../data/result/max_pattern_freq.nc")
+    DOM02_1D_mean = df_simulation_d1.cloud_fraction.resample(time="1D").mean().compute()
 
-    max_freq = ds_max["max_freq"]
-    max_pattern = ds_max["max_pattern"]
-    mean_pattern_freq = ds_max["mean_freq"]
-    threshold_freq = params.manual_classifications.threshold_pattern
-    color_dict = {
-        "Sugar": "#A1D791",
-        "Flower": "#93D2E2",
-        "Fish": "#2281BB",
-        "Gravel": "#3EAE47",
-        "Flowers": "#93D2E2",
-        "Unclassified": "grey",
-    }
+    times = list(
+        set(obs_1D_mean.time.values).intersection(set(DOM02_1D_mean.time.values))
+    )
 
-    # + tags=[]
     fig, axs = plt.subplots(1, 1, figsize=(8, 2.2), dpi=300)
     df_simulation = xr.open_dataset(
         cfg.ANALYSIS.MESOSCALE.METRICS.output_filename_fmt.format(
@@ -163,7 +164,7 @@ if __name__ == "__main__":  # noqa: C901
     common_times = sorted(times_obs.intersection(times_sim))
     data_obs = df_goes16_dom1.sel(time=slice("2020-01-12", np.max(list(common_times))))
     obs_cf = data_obs.cloud_fraction
-    obs_cf[data_obs.valid_cells < data_obs.valid_cells.max() * 0.10] = np.nan
+    obs_cf[data_obs.valid_cells < data_obs.valid_cells.max() * 0.50] = np.nan
     axs.plot(
         data_obs.time,
         obs_cf,
@@ -171,20 +172,38 @@ if __name__ == "__main__":  # noqa: C901
         color=conf_dict["obs"]["color"],
     )
 
-    high_cloud_idx = np.where(data_obs.percentile_BT <= 290, 0.4, np.nan)
-    low_cloud_mask = np.where(data_obs.percentile_BT <= 290, False, True)
-    axs.plot(data_obs.time, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
+    high_cloud_idx_obs = np.where(
+        data_obs_d1.valid_cells / data_obs_d1.valid_cells.max() < valid_cell_limit,
+        True,
+        False,
+    )
+    high_cloud_idx_sim = np.where(
+        data_sim_d1.valid_cells / data_sim_d1.valid_cells.max() < valid_cell_limit,
+        True,
+        False,
+    )
+    high_cloud_idx = (
+        np.logical_or(high_cloud_idx_obs, high_cloud_idx_sim).astype(float) * 0.55
+    )
+    high_cloud_idx[high_cloud_idx == 0] = np.nan
+    print(high_cloud_idx)
+    low_cloud_mask = np.where(
+        np.logical_or(high_cloud_idx_obs, high_cloud_idx_sim), False, True
+    )
+    axs.plot(data_obs_d1.time, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
 
-    obs_overall_mean = float(data_obs.cloud_fraction.median())
-    obs_overall_25th = float(data_obs.cloud_fraction.quantile(0.25))
-    obs_overall_75th = float(data_obs.cloud_fraction.quantile(0.75))
+    obs_overall_mean = float(data_obs_d1.cloud_fraction.median())
+    obs_overall_25th = float(data_obs_d1.cloud_fraction.quantile(0.25))
+    obs_overall_75th = float(data_obs_d1.cloud_fraction.quantile(0.75))
 
-    obs_lowcloud_mean = float(data_obs.sel(time=low_cloud_mask).cloud_fraction.median())
+    obs_lowcloud_mean = float(
+        data_obs_d1.sel(time=low_cloud_mask).cloud_fraction.median()
+    )
     obs_lowcloud_25th = float(
-        data_obs.sel(time=low_cloud_mask).cloud_fraction.quantile(0.25)
+        data_obs_d1.sel(time=low_cloud_mask).cloud_fraction.quantile(0.25)
     )
     obs_lowcloud_75th = float(
-        data_obs.sel(time=low_cloud_mask).cloud_fraction.quantile(0.75)
+        data_obs_d1.sel(time=low_cloud_mask).cloud_fraction.quantile(0.75)
     )
 
     logging.info(
@@ -223,7 +242,7 @@ if __name__ == "__main__":  # noqa: C901
                 .nearest(tolerance="10T")
             )
             data.cloud_fraction[
-                data.valid_cells < data.valid_cells.max() * 0.10
+                data.valid_cells < data.valid_cells.max() * 0.50
             ] = np.nan
             data = data.cloud_fraction
             logging.debug("Plotting")
@@ -235,13 +254,13 @@ if __name__ == "__main__":  # noqa: C901
                 alpha=alphas["exp" + str(experiment)],
             )
 
-            data_reindex = data.reindex(
-                time=data_obs.time, method="nearest", tolerance="5T"
+            data_reindex = (
+                data  # .reindex(time=data_obs.time, method="nearest", tolerance="5T")
             )
             #     print(data_reindex.sel(index=low_cloud_mask).mean())
-            means[f"DOM0{domain}_overall_mean"] = float(data.median())
-            means[f"DOM0{domain}_overall_25th"] = float(data.quantile(0.25))
-            means[f"DOM0{domain}_overall_75th"] = float(data.quantile(0.75))
+            means[f"DOM0{domain}_overall_mean"] = float(data_reindex.median())
+            means[f"DOM0{domain}_overall_25th"] = float(data_reindex.quantile(0.25))
+            means[f"DOM0{domain}_overall_75th"] = float(data_reindex.quantile(0.75))
             means[f"DOM0{domain}_lowclouds_mean"] = float(
                 data_reindex.sel(time=low_cloud_mask).median()
             )
@@ -398,8 +417,14 @@ if __name__ == "__main__":  # noqa: C901
         color=conf_dict["obs"]["color"],
     )
 
-    high_cloud_idx = np.where(data_obs.percentile_BT <= 290, 0.4, np.nan)
-    low_cloud_mask = np.where(data_obs.percentile_BT <= 290, False, True)
+    high_cloud_idx = np.where(
+        data_obs.valid_cells / data_obs.valid_cells.max() < valid_cell_limit,
+        0.55,
+        np.nan,
+    )
+    low_cloud_mask = np.where(
+        data_obs.valid_cells / data_obs.valid_cells.max() < valid_cell_limit, False, True
+    )
     axs.plot(data_obs.time, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
 
     obs_overall_mean = float(data_obs.percentile_BT.median())
@@ -583,8 +608,16 @@ if __name__ == "__main__":  # noqa: C901
         color=conf_dict["obs"]["color"],
     )
 
-    high_cloud_idx = np.where(data_obs.percentile_BT <= 290, 0.18, np.nan)
-    low_cloud_mask = np.where(data_obs.percentile_BT <= 290, False, True)
+    high_cloud_idx = np.where(
+        data_obs.valid_cells / data_obs.valid_cells.max() <= valid_cell_limit,
+        0.18,
+        np.nan,
+    )
+    low_cloud_mask = np.where(
+        data_obs.valid_cells / data_obs.valid_cells.max() <= valid_cell_limit,
+        False,
+        True,
+    )
     axs.plot(data_obs.time, high_cloud_idx, color="grey", alpha=0.2, linewidth=10)
 
     obs_overall_mean = float(data_obs.cloud_fraction.median())

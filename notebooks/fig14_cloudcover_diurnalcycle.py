@@ -38,6 +38,8 @@ import plot_helpers as ph  # noqa: E402
 cfg = OmegaConf.load("../config/paths.cfg")
 params = OmegaConf.load("../config/mesoscale_params.yaml")
 
+valid_cell_limit = 0.9
+
 logging.basicConfig(
     level=logging.INFO,
     handlers=[logging.FileHandler("../logs/fig14.log"), logging.StreamHandler()],
@@ -251,20 +253,31 @@ if __name__ == "__main__":
 
     # Restrict datasets to days without high clouds
     ## percentile method
+    valid_cell_limit
     high_cloud_flag_goes16_dom1 = (
-        ~(df_goes16_dom1.percentile_BT < 290).groupby(df_goes16_dom1.time.dt.date).any()
+        ~(df_goes16_dom1.valid_cells < valid_cell_limit)
+        .groupby(df_goes16_dom1.time.dt.date)
+        .any()
     )
     high_cloud_flag_goes16_dom2 = (
-        ~(df_goes16_dom2.percentile_BT < 290).groupby(df_goes16_dom2.time.dt.date).any()
+        ~(df_goes16_dom2.valid_cells < valid_cell_limit)
+        .groupby(df_goes16_dom2.time.dt.date)
+        .any()
     )
     high_cloud_flag_rttov_dom1 = (
-        ~(df_rttov_dom1.percentile_BT < 290).groupby(df_rttov_dom1.time.dt.date).any()
+        ~(df_rttov_dom1.valid_cells < valid_cell_limit)
+        .groupby(df_rttov_dom1.time.dt.date)
+        .any()
     )
     high_cloud_flag_rttov_dom2 = (
-        ~(df_rttov_dom2.percentile_BT < 290).groupby(df_rttov_dom2.time.dt.date).any()
+        ~(df_rttov_dom2.valid_cells < valid_cell_limit)
+        .groupby(df_rttov_dom2.time.dt.date)
+        .any()
     )
     high_cloud_flag_rttov_dom3 = (
-        ~(df_rttov_dom3.percentile_BT < 290).groupby(df_rttov_dom3.time.dt.date).any()
+        ~(df_rttov_dom3.valid_cells < valid_cell_limit)
+        .groupby(df_rttov_dom3.time.dt.date)
+        .any()
     )
 
     common_times = (

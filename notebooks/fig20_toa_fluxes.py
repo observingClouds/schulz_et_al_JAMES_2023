@@ -59,15 +59,6 @@ hv.extension("bokeh")
 cfg = OmegaConf.load("../config/paths.cfg")
 params = OmegaConf.load("../config/mesoscale_params.yaml")
 
-geobounds = {}
-geobounds["lat_min"] = params.metrics.geobounds.lat_min
-geobounds["lat_max"] = params.metrics.geobounds.lat_max
-geobounds["lon_min"] = params.metrics.geobounds.lon_min
-geobounds["lon_max"] = params.metrics.geobounds.lon_max
-
-threshold_discard_percentile = params.metrics.BTbounds.threshold_discard_percentile
-threshold_discard_temperature = params.metrics.BTbounds.threshold_discard_temperature
-
 cat_tmp = open_catalog(
     "https://raw.githubusercontent.com/eurec4a/eurec4a-intake/master/catalog.yml"
 )
@@ -112,30 +103,12 @@ df = pd.read_json(CRE_output_fmt).loc["2020-01-11":"2020-02-18"]
 
 # ## Get mask for high clouds in OBS
 
-ds_bt_dom01 = cat_tmp.simulations.ICON.LES_CampaignDomain_control.rttov_DOM01.to_dask()
-ds_bt_dom02 = cat_tmp.simulations.ICON.LES_CampaignDomain_control.rttov_DOM02.to_dask()
-
-BT_DOM01 = ds_bt_dom01.sel(
-    lon=slice(geobounds["lon_min"], geobounds["lon_max"]),
-    lat=slice(geobounds["lat_min"], geobounds["lat_max"]),
-).synsat_rttov_forward_model_1__abi_ir__goes_16__channel_7
-BT_DOM02 = ds_bt_dom02.sel(
-    lon=slice(geobounds["lon_min"], geobounds["lon_max"]),
-    lat=slice(geobounds["lat_min"], geobounds["lat_max"]),
-).synsat_rttov_forward_model_2__abi_ir__goes_16__channel_7
-
-q_DOM01 = BT_DOM01.quantile(
-    threshold_discard_percentile / 100, dim=["lat", "lon"]
-).compute()
-q_DOM02 = (
-    BT_DOM02.chunk({"lat": 534, "lon": 533, "time": 12})
-    .quantile(threshold_discard_percentile / 100, dim=["lat", "lon"])
-    .compute()
+df_nohighClouds = (
+    pd.read_parquet("../data/result/no_high_clouds_DOM02.pq")
+    .set_index("no_high_cloud")
+    .loc["2020-01-11":"2020-02-18"]
+    .reset_index()
 )
-
-fn = "../data/intermediate/Quantile_brightnessT_GOES16.nc"
-q_ABI = xr.open_dataset(fn)
-q_ABI = q_ABI.sel(time=slice("2020-01-11", "2020-02-18"))
 
 
 # ## Calculate average and correlations
@@ -144,42 +117,8 @@ def regression_func(x):
     return slope * x + intercept
 
 
-count_highcloud_occurrance_DOM01 = (
-    (q_DOM01 < threshold_discard_temperature).resample(time="1D").sum()
-)
-days_without_highclouds_DOM01 = count_highcloud_occurrance_DOM01.where(
-    count_highcloud_occurrance_DOM01 == 0, drop=True
-).time
-print(count_highcloud_occurrance_DOM01)
-count_highcloud_occurrance_DOM02 = (
-    (q_DOM02 < threshold_discard_temperature).resample(time="1D").sum()
-)
-days_without_highclouds_DOM02 = count_highcloud_occurrance_DOM02.where(
-    count_highcloud_occurrance_DOM02 == 0, drop=True
-).time
-count_highcloud_occurrance_CERES = (
-    (q_ABI.C13 < threshold_discard_temperature).resample(time="1D").sum()
-)
-days_without_highclouds_CERES = count_highcloud_occurrance_CERES.where(
-    count_highcloud_occurrance_CERES == 0, drop=True
-).time
+days_without_high_clouds = df_nohighClouds.sort_values("no_high_cloud")["no_high_cloud"]
 
-common_times_DOM02_CERES = list(
-    set(count_highcloud_occurrance_CERES.time.values).intersection(
-        count_highcloud_occurrance_DOM02.time.values
-    )
-)
-
-DOM01_CERES_common_days_without_highclouds = list(
-    set(days_without_highclouds_CERES.values).intersection(
-        days_without_highclouds_DOM01.values
-    )
-)
-DOM02_CERES_common_days_without_highclouds = list(
-    set(days_without_highclouds_CERES.values).intersection(
-        days_without_highclouds_DOM02.values
-    )
-)
 
 df_net = df[["net_daily_CERES", "net_daily_DOM01", "net_daily_DOM02"]]
 
@@ -201,21 +140,21 @@ df_cre_net = df[["netCRE_daily_CERES", "netCRE_daily_DOM01", "netCRE_daily_DOM02
 logging.info(df_cre_net.mean())
 
 logging.info("Shallow cloud days only statistics")
-logging.info(df_net.loc[DOM02_CERES_common_days_without_highclouds].corr())
+logging.info(df_net.loc[days_without_high_clouds].corr())
 
-logging.info(df_net.loc[DOM02_CERES_common_days_without_highclouds].mean())
+logging.info(df_net.loc[days_without_high_clouds].mean())
 
 logging.info("SW-CRE mean")
 df_cre_sw = df[["swCRE_daily_CERES", "swCRE_daily_DOM01", "swCRE_daily_DOM02"]]
-logging.info(df_cre_sw.loc[DOM02_CERES_common_days_without_highclouds].mean())
+logging.info(df_cre_sw.loc[days_without_high_clouds].mean())
 
 logging.info("LW-CRE mean")
 df_cre_lw = df[["lwCRE_daily_CERES", "lwCRE_daily_DOM01", "lwCRE_daily_DOM02"]]
-logging.info(df_cre_lw.loc[DOM02_CERES_common_days_without_highclouds].mean())
+logging.info(df_cre_lw.loc[days_without_high_clouds].mean())
 
 logging.info("net-CRE mean")
 df_cre_net = df[["netCRE_daily_CERES", "netCRE_daily_DOM01", "netCRE_daily_DOM02"]]
-logging.info(df_cre_net.loc[DOM02_CERES_common_days_without_highclouds].mean())
+logging.info(df_cre_net.loc[days_without_high_clouds].mean())
 
 # ## Visualize cre
 
@@ -225,9 +164,9 @@ logging.info(df_cre_net.loc[DOM02_CERES_common_days_without_highclouds].mean())
 cre_min = 0
 cre_max = 0
 
-max_freq = ds_max["max_freq"].loc[DOM02_CERES_common_days_without_highclouds]
-max_pattern = ds_max["max_pattern"].loc[DOM02_CERES_common_days_without_highclouds]
-mean_pattern_freq = ds_max["mean_freq"].loc[DOM02_CERES_common_days_without_highclouds]
+max_freq = ds_max["max_freq"].loc[days_without_high_clouds.values]
+max_pattern = ds_max["max_pattern"].loc[days_without_high_clouds.values]
+mean_pattern_freq = ds_max["mean_freq"].loc[days_without_high_clouds.values]
 threshold_freq = threshold_freq_default
 
 fig, axs_ = plt.subplots(2, 2, figsize=(8, 8))
@@ -238,28 +177,23 @@ for pr, (product, product_label) in enumerate(
     p = pr + 1
     axs[p].set_title(product_label)
     dom01 = df[kf.format(product, "DOM01")].loc[
-        DOM01_CERES_common_days_without_highclouds
-    ] - np.mean(
-        df[kf.format(product, "DOM01")].loc[DOM01_CERES_common_days_without_highclouds]
-    )
+        days_without_high_clouds.values
+    ] - np.mean(df[kf.format(product, "DOM01")].loc[days_without_high_clouds.values])
     ceres_dom01 = df[kf.format(product, "CERES")].loc[
-        DOM01_CERES_common_days_without_highclouds
-    ] - np.mean(
-        df[kf.format(product, "CERES")].loc[DOM01_CERES_common_days_without_highclouds]
-    )
+        days_without_high_clouds.values
+    ] - np.mean(df[kf.format(product, "CERES")].loc[days_without_high_clouds.values])
     ceres_dom02_mean = np.mean(
-        df[kf.format(product, "CERES")].loc[DOM02_CERES_common_days_without_highclouds]
+        df[kf.format(product, "CERES")].loc[days_without_high_clouds.values]
     )
     ceres_dom02 = (
-        df[kf.format(product, "CERES")].loc[DOM02_CERES_common_days_without_highclouds]
+        df[kf.format(product, "CERES")].loc[days_without_high_clouds.values]
         - ceres_dom02_mean
     )
     dom02_mean = np.mean(
-        df[kf.format(product, "DOM02")].loc[DOM02_CERES_common_days_without_highclouds]
+        df[kf.format(product, "DOM02")].loc[days_without_high_clouds.values]
     )
     dom02 = (
-        df[kf.format(product, "DOM02")].loc[DOM02_CERES_common_days_without_highclouds]
-        - dom02_mean
+        df[kf.format(product, "DOM02")].loc[days_without_high_clouds.values] - dom02_mean
     )
 
     if args.highClouds:
@@ -269,12 +203,12 @@ for pr, (product, product_label) in enumerate(
         ceres_dom01_all = df[kf.format(product, "CERES")] - np.mean(
             df[kf.format(product, "CERES")]
         )
-        ceres_dom02_all = df[kf.format(product, "CERES")].loc[
-            common_times_DOM02_CERES
-        ] - np.mean(df[kf.format(product, "CERES")].loc[common_times_DOM02_CERES])
-        dom02_all = df[kf.format(product, "DOM02")].loc[
-            common_times_DOM02_CERES
-        ] - np.mean(df[kf.format(product, "DOM02")].loc[common_times_DOM02_CERES])
+        ceres_dom02_all = df[kf.format(product, "CERES")].loc[df.index.values] - np.mean(
+            df[kf.format(product, "CERES")].loc[df.index.values]
+        )
+        dom02_all = df[kf.format(product, "DOM02")].loc[df.index.values] - np.mean(
+            df[kf.format(product, "DOM02")].loc[df.index.values]
+        )
 
     # without high clouds
     colors = []
@@ -288,6 +222,7 @@ for pr, (product, product_label) in enumerate(
             colors.append(color)
         else:
             colors.append("grey")
+
     scatter = axs[p].scatter(dom02, ceres_dom02, color=colors)
 
     slope, intercept, _, _, _ = scipy.stats.linregress(x=dom02, y=ceres_dom02)
@@ -363,7 +298,8 @@ for pr, (product, product_label) in enumerate(
         cre_min = min_cre - 1
     if max_cre > cre_max:
         cre_max = max_cre + 1
-    cre_min = -30
+    cre_min = -35
+    cre_max = 20
     axs[p].set_ylabel(
         r"$\mathrm{CRE}_{\mathrm{CERES}}-\overline{\mathrm{CRE}_{\mathrm{CERES}}}$ /"
         r" Wm$^{-2}$"
@@ -402,13 +338,13 @@ fig, axs_ = plt.subplots(2, 2, figsize=(8, 8))
 axs = axs_.flatten()[0]
 
 # without high clouds
-max_freq = ds_max["max_freq"].loc[DOM02_CERES_common_days_without_highclouds]
-max_pattern = ds_max["max_pattern"].loc[DOM02_CERES_common_days_without_highclouds]
-mean_pattern_freq = ds_max["mean_freq"].loc[DOM02_CERES_common_days_without_highclouds]
+max_freq = ds_max["max_freq"].loc[days_without_high_clouds.values]
+max_pattern = ds_max["max_pattern"].loc[days_without_high_clouds.values]
+mean_pattern_freq = ds_max["mean_freq"].loc[days_without_high_clouds.values]
 threshold_freq = threshold_freq_default
 
-sim = df_net["net_daily_DOM02"].loc[DOM02_CERES_common_days_without_highclouds]
-obs = df_net["net_daily_CERES"].loc[DOM02_CERES_common_days_without_highclouds]
+sim = df_net["net_daily_DOM02"].loc[days_without_high_clouds.values]
+obs = df_net["net_daily_CERES"].loc[days_without_high_clouds.values]
 
 colors = []
 for date in sim.index:
