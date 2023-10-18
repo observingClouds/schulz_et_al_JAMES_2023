@@ -1,8 +1,8 @@
-# Supplemental material to Schulz et al. (submitted)
+# Supplemental material to Schulz et al. (2023)
 [![Software](https://img.shields.io/badge/Software-10.5281/zenodo.7591545-blue)](https://doi.org/10.5281/zenodo.7591545)
-[![Manuscript](https://img.shields.io/badge/Manuscript-10.31223/X5H651-blue)](https://doi.org/10.31223/X5H651)
+[![Manuscript](https://img.shields.io/badge/Manuscript-10.1029/2023MS003648-blue)](http://dx.doi.org/10.1029/2023MS003648)
 
-This repository contains the analysis scripts of Schulz et al. (submitted) and is archived under the [DOI 10.5281/zenodo.7591545](https://doi.org/10.5281/zenodo.7591545).
+This repository contains the analysis scripts of Schulz et al. (2023) and is archived under the [DOI 10.5281/zenodo.7591545](https://doi.org/10.5281/zenodo.7591545).
 
 The entire analysis can be reproduced (sufficient compute resources provided) with
 
