@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Schulz"
+  given-names: "Hauke"
+title: "Supporting material of Schulz et al. (2023)"
+abstract: "Supporting material of Schulz et al. (2023)"
+license: GPL-3.0
+doi: 10.5281/zenodo.7591545
+repository-code: "https://github.com/observingClouds/schulz_et_al_JAMES_2023"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Schulz"
+    given-names: "Hauke"
+  - family-names: "Stevens"
+    given-names: "Bjorn"
+  doi: "10.1029/2023MS003648"
+  journal: "Journal of Advances in Modeling Earth Systems"
+  month: 10
+  title: "Evaluating Large-Domain, Hecto-Meter, Large-Eddy Simulations of Trade-Wind Clouds Using EUREC4A Data"
+  volume: 15
+  issue: 10
+  year: 2023
