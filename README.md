@@ -21,3 +21,5 @@ dvc repro fig14_pattern_cloudfraction
 ```
 
 The exact versions of packages that have been used are provided in `environment.yaml.pinned`
+
+The model output can be accessed via the [EUREC4A-Intake](https://github.com/eurec4a/eurec4a-intake)-catalog but is also archived on the DKRZ tape. The [tape-catalog](https://github.com/observingClouds/tape_archive_index/blob/main/catalog.yml) provides easy access to those files.
